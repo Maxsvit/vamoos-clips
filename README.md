@@ -1,12 +1,71 @@
-# React + Vite
+# 🎬 Vamoos Clips
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Vamoos Clips** is a web platform for collecting, browsing, and sharing Twitch clips.  
+It is built with **React + Vite (frontend)** and **Express.js (backend)**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## Expanding the ESLint configuration
+- 📥 Add clips via Google Forms integration
+- 🖼️ Automatic fetching of Twitch clip previews
+- 👥 "About Us" page with team members info
+- 📢 Contact section with Telegram & Email links
+- 🛡️ Basic anti-spam protection (rate limiting)
+- 🎨 Modern dark UI with Tailwind CSS
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- ⚡ [React](https://react.dev/) (with Vite)
+- 🎨 [Tailwind CSS](https://tailwindcss.com/)
+
+### Backend
+
+- 🟢 [Node.js](https://nodejs.org/)
+- 🚂 [Express.js](https://expressjs.com/)
+- 🔄 [node-fetch](https://www.npmjs.com/package/node-fetch) for API calls
+- 📊 Google Sheets + Forms integration
+
+## 📂 Project Structure
+
+my-clips-site/
+├── public/ # favicon, fonts, static files
+├── server/ # Express.js backend
+│ └── server.js
+├── src/ # React frontend
+│ ├── assets/img/ # images
+│ ├── components/ # reusable UI components
+│ └── pages/ # pages (Home, About, SubmitClip, ...)
+├── dist/ # production build (ignored by Git)
+├── package.json
+├── vite.config.js
+└── tailwind.config.js
+
+---
+
+## ⚙️ Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Maxsvit/vamoos-clips.git
+cd my-clips-site
+npm install
+cd server
+node server.js
+
+
+---
+📝 License
+
+This project is created for educational and personal use.
+
+---
+
+Do you want me to also prepare a **`.gitignore` file** in English (tailored for React + Vite + Node/Express) so your GitHub repo is clean from `node_modules` and `dist`?
+
+```

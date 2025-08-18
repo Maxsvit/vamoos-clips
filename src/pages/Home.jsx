@@ -36,7 +36,6 @@ function Home() {
           })
           .filter((x) => !!x.url && /^https?:\/\//i.test(x.url));
 
-        // дедуп за URL + найновіші першими + ліміт (опційно)
         const seen = new Set();
         const unique = [];
         for (const it of norm) {
@@ -45,7 +44,7 @@ function Home() {
           unique.push(it);
         }
 
-        setItems(unique); // .slice(0, 18) — якщо хочеш обмежити кількість
+        setItems(unique);
       } catch (e) {
         console.error(e);
         setItems([]);

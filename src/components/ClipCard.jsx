@@ -32,7 +32,7 @@ export default function ClipCard({ clip }) {
   useEffect(() => {
     if (!realUrl || !isHttp(realUrl)) {
       setFailed(true);
-      setThumb(fallbackLogo); // одразу лого якщо URL кривий
+      setThumb(fallbackLogo);
       setLoading(false);
       return;
     }
@@ -44,7 +44,6 @@ export default function ClipCard({ clip }) {
       setFailed(false);
       console.debug("[ClipCard] start:", realUrl);
 
-      // 0) миттєвий fallback по slug (щоб не було пустої картки)
       const slug = getClipSlug(realUrl);
       if (slug && !abort) {
         setThumb(
@@ -57,7 +56,6 @@ export default function ClipCard({ clip }) {
       }
 
       try {
-        // 1) пробуємо кращий thumb через бек
         const res = await fetch(
           `http://localhost:8080/api/clip-preview?url=${encodeURIComponent(
             realUrl
@@ -74,7 +72,6 @@ export default function ClipCard({ clip }) {
             )}`;
             if (!abort) setThumb(viaProxy);
           } else {
-            // якщо прев'ю немає → fallback
             if (!abort) setThumb(fallbackLogo);
           }
         } else {

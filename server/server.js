@@ -73,12 +73,10 @@ app.get("/api/clips", async (req, res) => {
     const now = Date.now();
     const force = String(req.query.force || "") === "1";
 
-    // наш короткий кеш (10с)
     if (!force && clipsCache.data && now - clipsCache.ts < 10_000) {
       return res.json({ success: true, clips: clipsCache.data });
     }
 
-    // анти-кеш + живий export-URL (поставте своє значення в SHEETS_CSV)
     const csvUrl = `${SHEETS_CSV}${
       SHEETS_CSV.includes("?") ? "&" : "?"
     }_ts=${now}`;
@@ -105,7 +103,6 @@ app.get("/api/clips", async (req, res) => {
     const csvText = await r.text();
     const { header, rows } = parseCsv(csvText);
 
-    // Підтримка укр/англ назв колонок
     const idx = {
       ts: header.findIndex((h) => /позначка часу|timestamp/i.test(h)),
       url: header.findIndex((h) => /clip\s*url|url\s*кліпу|посилання/i.test(h)),
@@ -114,7 +111,6 @@ app.get("/api/clips", async (req, res) => {
       note: header.findIndex((h) => /нік|коментар|note|comment/i.test(h)),
     };
 
-    // простий захист, щоб одразу побачити якщо шапка не впізналась
     if (idx.url < 0) {
       console.error("[clips] URL column not found. Header =", header);
       return res.json({ success: true, clips: [] });

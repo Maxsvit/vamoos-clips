@@ -9,7 +9,6 @@ export default function SubmitClip() {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
 
-  // простенька перевірка що це саме твіч-кліп
   const isTwitchClip = useMemo(() => {
     const u = clipUrl.trim();
     if (
@@ -17,7 +16,6 @@ export default function SubmitClip() {
       !/^https?:\/\/clips\.twitch\.tv\//i.test(u)
     )
       return false;
-    // бажано мати slug кліпу
     return (
       /\/clip\/[\w-]+/i.test(u) ||
       /^https?:\/\/clips\.twitch\.tv\/[\w-]+/i.test(u)
