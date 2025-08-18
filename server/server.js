@@ -1,11 +1,22 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
+import path from "path";
+import { fileURLToPath } from "url";
 import csv from "csv-parser";
 import rateLimit from "express-rate-limit";
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: "https://vamoos-clips.onrender.com" }));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, "../dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
+});
 const clipsCache = { ts: 0, data: null };
 app.use(express.json());
 const FORM_ACTION =
