@@ -64,8 +64,4 @@ node server.js
 
 This project is created for educational and personal use.
 
----
-
-Do you want me to also prepare a **`.gitignore` file** in English (tailored for React + Vite + Node/Express) so your GitHub repo is clean from `node_modules` and `dist`?
-
 ```
