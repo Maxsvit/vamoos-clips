@@ -46,20 +46,14 @@ export default function ClipCard({ clip }) {
 
       const slug = getClipSlug(realUrl);
       if (slug && !abort) {
-        setThumb(
-          `http://localhost:8080/api/clip-thumb?slug=${encodeURIComponent(
-            slug
-          )}`
-        );
+        setThumb(`/api/clip-thumb?slug=${encodeURIComponent(slug)}`);
       } else {
         setThumb(fallbackLogo);
       }
 
       try {
         const res = await fetch(
-          `http://localhost:8080/api/clip-preview?url=${encodeURIComponent(
-            realUrl
-          )}`
+          `/api/clip-preview?url=${encodeURIComponent(realUrl)}`
         );
 
         if (res.ok) {
@@ -67,7 +61,7 @@ export default function ClipCard({ clip }) {
           console.debug("[clip-preview]", data);
 
           if (data.thumbnail_url) {
-            const viaProxy = `http://localhost:8080/api/img?url=${encodeURIComponent(
+            const viaProxy = `/api/img?url=${encodeURIComponent(
               data.thumbnail_url
             )}`;
             if (!abort) setThumb(viaProxy);
@@ -113,11 +107,7 @@ export default function ClipCard({ clip }) {
               if (thumb.includes("/api/img")) {
                 const slug = getClipSlug(realUrl);
                 if (slug) {
-                  setThumb(
-                    `http://localhost:8080/api/clip-thumb?slug=${encodeURIComponent(
-                      slug
-                    )}`
-                  );
+                  setThumb(`/api/clip-thumb?slug=${encodeURIComponent(slug)}`);
                   return;
                 }
               }

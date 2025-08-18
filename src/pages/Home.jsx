@@ -18,7 +18,7 @@ function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch("http://localhost:8080/api/clips");
+        const r = await fetch("/api/clips");
         const data = await r.json();
 
         const raw = data?.items ?? data?.clips ?? [];
