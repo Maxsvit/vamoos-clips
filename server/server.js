@@ -14,9 +14,6 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, "../dist")));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../dist/index.html"));
-});
 const clipsCache = { ts: 0, data: null };
 app.use(express.json());
 const FORM_ACTION =
@@ -214,19 +211,6 @@ app.post("/api/submit", submitLimiter, async (req, res) => {
   }
 });
 
-app.get("/api/health", (_req, res) => res.json({ ok: true }));
-
-function normalizeClipUrl(raw) {
-  try {
-    if (!isValidHttpUrl(raw)) return null;
-    const u = new URL(raw);
-    const p = u.pathname.split("/").filter(Boolean);
-    const i = p.findIndex((x) => x.toLowerCase() === "clip");
-    if (i >= 0 && p[i + 1]) return `https://clips.twitch.tv/${p[i + 1]}`;
-    if (u.hostname.includes("clips.twitch.tv")) return raw;
-  } catch {}
-  return null;
-}
 function isBadThumb(url) {
   return (
     /twitch_logo/i.test(url) || /ttv-static-metadata\/twitch_logo/i.test(url)
@@ -280,41 +264,6 @@ async function fetchBestThumb(clipUrl) {
 
   return null;
 }
-
-app.get("/api/img", async (req, res) => {
-  try {
-    const raw = req.query.url;
-    if (!raw) return res.status(400).json({ error: "Missing url" });
-    const u = new URL(raw);
-
-    if (!ALLOWED_IMG_HOSTS.has(u.hostname)) {
-      return res.status(400).json({ error: "Host not allowed" });
-    }
-
-    const r = await fetch(u.toString(), {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-        Referer: "https://www.twitch.tv/",
-      },
-    });
-
-    const buf = Buffer.from(await r.arrayBuffer());
-    res.status(r.ok ? 200 : r.status);
-    res.set("Content-Type", r.headers.get("content-type") || "image/jpeg");
-    res.set("Cache-Control", "public, max-age=3600");
-    return res.send(buf);
-  } catch (e) {
-    console.error(e);
-    const blank = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=",
-      "base64"
-    );
-    res.set("Content-Type", "image/png");
-    return res.status(200).send(blank);
-  }
-});
 
 app.get("/api/clip-preview", async (req, res) => {
   try {
@@ -371,7 +320,6 @@ app.get("/api/clip-thumb", async (req, res) => {
     const slug = req.query.slug;
     if (!slug) return res.status(400).json({ error: "Missing slug" });
 
-    // Спробуємо кілька типових розмірів по черзі
     const sizes = ["480x272", "260x147", "86x45"];
     let ok = false,
       buf = null,
@@ -383,7 +331,6 @@ app.get("/api/clip-thumb", async (req, res) => {
         slug
       )}-preview-${sz}.jpg`;
       const r = await fetch(cdnUrl, {
-        // Деякі CDN відсікають “порожні” запити — підставимо реальні заголовки
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
@@ -398,7 +345,6 @@ app.get("/api/clip-thumb", async (req, res) => {
         ok = true;
         break;
       }
-      // якщо 403/AccessDenied — йдемо на інший розмір
     }
 
     if (ok) {
@@ -408,7 +354,6 @@ app.get("/api/clip-thumb", async (req, res) => {
       return res.send(buf);
     }
 
-    // запасний 1x1 PNG, щоб <img> не ламався
     const blank = Buffer.from(
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=",
       "base64"
@@ -424,6 +369,56 @@ app.get("/api/clip-thumb", async (req, res) => {
     res.set("Content-Type", "image/png");
     return res.status(200).send(blank);
   }
+});
+app.get("/api/img", async (req, res) => {
+  try {
+    const raw = req.query.url;
+    if (!raw) return res.status(400).json({ error: "Missing url" });
+    const u = new URL(raw);
+
+    if (!ALLOWED_IMG_HOSTS.has(u.hostname)) {
+      return res.status(400).json({ error: "Host not allowed" });
+    }
+
+    const r = await fetch(u.toString(), {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+        Referer: "https://www.twitch.tv/",
+      },
+    });
+
+    const buf = Buffer.from(await r.arrayBuffer());
+    res.status(r.ok ? 200 : r.status);
+    res.set("Content-Type", r.headers.get("content-type") || "image/jpeg");
+    res.set("Cache-Control", "public, max-age=3600");
+    return res.send(buf);
+  } catch (e) {
+    console.error(e);
+    const blank = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=",
+      "base64"
+    );
+    res.set("Content-Type", "image/png");
+    return res.status(200).send(blank);
+  }
+});
+app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+function normalizeClipUrl(raw) {
+  try {
+    if (!isValidHttpUrl(raw)) return null;
+    const u = new URL(raw);
+    const p = u.pathname.split("/").filter(Boolean);
+    const i = p.findIndex((x) => x.toLowerCase() === "clip");
+    if (i >= 0 && p[i + 1]) return `https://clips.twitch.tv/${p[i + 1]}`;
+    if (u.hostname.includes("clips.twitch.tv")) return raw;
+  } catch {}
+  return null;
+}
+app.get(/^\/(?!api\/).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 const PORT = process.env.PORT || 8080;
