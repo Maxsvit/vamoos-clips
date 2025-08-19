@@ -9,21 +9,18 @@ export default function About() {
       name: "Vamoos",
       role: "Контент-менеджер, розробник, дизайнер, адміністратор",
       desc: "Займаюсь всім по трошку, але починав саме з ідей та контенту.",
-      contact: "@mafggcx",
       image: vamoos,
     },
     {
       name: "Носочек Шкарпеткович",
       role: "Помічник по всьому",
       desc: "Цю людину можна попросити про все, що завгодно. Він завжди допоможе!",
-      contact: "@NosochekShkarpetkovych",
       image: nosochek,
     },
     {
       name: "Nasty Cringe",
       role: "Монтажер",
       desc: "Монтує кліпи та створює відео для ютуб канала.",
-      contact: "@Nastyandbad",
       image: nasty,
     },
   ];
@@ -53,7 +50,6 @@ export default function About() {
             <h2 className="text-xl font-semibold">{person.name}</h2>
             <p className="text-indigo-400">{person.role}</p>
             <p className="text-gray-400 mt-2">{person.desc}</p>
-            <p className="text-sm text-gray-500 mt-2">{person.contact}</p>
           </div>
         ))}
       </section>
