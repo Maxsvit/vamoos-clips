@@ -81,7 +81,7 @@ export default function About() {
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           <a
-            href="https://t.me/mafggcx"
+            href="https://t.me/martixmax"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold hover:bg-indigo-700 transition"
