@@ -7,7 +7,11 @@ import csv from "csv-parser";
 import rateLimit from "express-rate-limit";
 
 const app = express();
-app.use(cors({ origin: "https://vamoos-clips.onrender.com" }));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://vamoos-clips.onrender.com"],
+  })
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

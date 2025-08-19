@@ -19,8 +19,8 @@ export default function About() {
     },
     {
       name: "Nasty Cringe",
-      role: "Монтажер",
-      desc: "Монтує кліпи та створює відео для ютуб канала.",
+      role: "Монтажер, редактор, стрімер",
+      desc: "Монтує кліпи, допомагає з редагуванням та активно стрімить на Twitch.",
       image: nasty,
     },
   ];
@@ -50,6 +50,26 @@ export default function About() {
             <h2 className="text-xl font-semibold">{person.name}</h2>
             <p className="text-indigo-400">{person.role}</p>
             <p className="text-gray-400 mt-2">{person.desc}</p>
+
+            {person.name === "Nasty Cringe" && (
+              <a
+                href="https://www.twitch.tv/nasty_cringe"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-purple-400 hover:text-purple-300 mt-3 justify-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                  className="w-5 h-5"
+                >
+                  <path d="M4 2L2 6v14h6v2h4l2-2h4l4-4V2H4zm16 12l-2 2h-6l-2 2v-2H6V4h14v10z" />
+                  <path d="M14 6h2v5h-2zm-4 0h2v5h-2z" />
+                </svg>
+                nasty_cringe
+              </a>
+            )}
           </div>
         ))}
       </section>
