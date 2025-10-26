@@ -1,9 +1,22 @@
+import { useState } from "react";
 import Footer from "../components/Footer";
 import nasty from "../assets/img/nasty.jpg";
 import nosochek from "../assets/img/nosochek.jpg";
 import vamoos from "../assets/img/vamoos.jpg";
 
 export default function About() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText("themainview@gmail.com");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Не вдалося скопіювати:", err);
+    }
+  };
+
   const team = [
     {
       name: "Vamoos",
@@ -24,8 +37,9 @@ export default function About() {
       image: nasty,
     },
   ];
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 text-white relative">
       <section className="py-32 text-center">
         <h1 className="text-4xl font-bold mb-4">Про нас</h1>
         <p className="text-gray-400">
@@ -81,21 +95,28 @@ export default function About() {
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
           <a
-            href="https://t.me/martixmax"
+            href="https://t.me/vamoosmax"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold hover:bg-indigo-700 transition"
           >
             📢 Telegram
           </a>
-          <a
-            href="mailto:themainview@gmail.com"
-            className="px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-800 transition"
+
+          <button
+            onClick={handleCopy}
+            className="relative px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-800 transition"
           >
             ✉️ Email
-          </a>
+            {copied && (
+              <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-green-600 text-white text-sm px-3 py-1 rounded-lg shadow-lg">
+                Скопійовано ✅
+              </span>
+            )}
+          </button>
         </div>
       </section>
+
       <Footer />
     </div>
   );
