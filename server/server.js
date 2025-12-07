@@ -19,7 +19,7 @@ app.use(
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FRONTEND_ORIGIN =
-  process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+  process.env.FRONTEND_ORIGIN || "https://vamoos-clips.onrender.com";
 
 app.use(express.static(path.join(__dirname, "../dist")));
 app.use(express.json());
