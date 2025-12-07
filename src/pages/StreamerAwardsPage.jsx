@@ -465,14 +465,14 @@ const CATEGORIES = [
   {
     id: "dota_of_the_year",
     title: "Dota 2 стример року",
-    description: "Найкращий Dota 2 стрімер року.",
+    description: "Найкращий Dota 2 стример року.",
     type: "streamer",
     nominees: DOTA_OF_THE_YEAR_NOMINEES,
   },
   {
     id: "gamer_of_the_year",
     title: "Ігровий стример року",
-    description: "Стрімер, який цього року найкраще показав себе в іграх: від соло-проходжень до командних матчів.",
+    description: "Стример, який цього року найкраще показав себе в іграх: від соло-проходжень до командних матчів.",
     type: "streamer",
     nominees: ALL_OF_THE_YEAR_NOMINEES,
   }  
@@ -896,7 +896,7 @@ export default function StreamerAwardsPage() {
             ) : authUser ? (
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400">
-                  Увійшов як{" "}
+                  Залогінений як{" "}
                   <strong>{authUser.displayName || authUser.login}</strong>
                 </span>
                 <button
