@@ -229,7 +229,8 @@ async function sendVote({
 const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
 const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
 const TWITCH_REDIRECT_URI =
-  process.env.TWITCH_REDIRECT_URI || "http://localhost:8080/api/auth/twitch/callback";
+  process.env.TWITCH_REDIRECT_URI ||
+  "https://vamoos-clips.onrender.com/api/auth/twitch/callback";
 
 function getTwitchUserFromReq(req) {
   const raw = req.cookies?.twitch_user;
