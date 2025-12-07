@@ -387,7 +387,6 @@ const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "kharkivets", name: "kharkivets", nickname: "kharkivets", login: "kharkivets" },
   { id: "itsmoysha", name: "itsmoysha", nickname: "itsmoysha", login: "itsmoysha" },
   { id: "nimbleem", name: "nimbleem", nickname: "nimbleem", login: "nimbleem" },
-  { id: "aaavrora", name: "aaavrora", nickname: "aaavrora", login: "aaavrora" },
   { id: "mrsilly_boy", name: "mrsilly_boy", nickname: "mrsilly_boy", login: "mrsilly_boy" },
   { id: "mr__brom", name: "mr__brom", nickname: "mr__brom", login: "mr__brom" },
   { id: "masllory", name: "masllory", nickname: "masllory", login: "masllory" },
