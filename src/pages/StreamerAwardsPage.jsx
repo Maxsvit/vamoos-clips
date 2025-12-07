@@ -156,6 +156,9 @@ const DOTA_OF_THE_YEAR_NOMINEES = [
   { id: "totustop", name: "totustop", nickname: "totustop", login: "totustop" },
   { id: "doubleespresso", name: "doubleespresso", nickname: "doubleespresso", login: "doubleespresso" },
   { id: "rakuzan777", name: "rakuzan777", nickname: "rakuzan777", login: "rakuzan777" },
+  { id: "belonytv", name: "belonytv", nickname: "belonytv", login: "belonytv" },
+  { id: "bafik", name: "bafik", nickname: "bafik", login: "bafik" },
+  { id: "jex_ua", name: "jex_ua", nickname: "jex_ua", login: "jex_ua" },
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
