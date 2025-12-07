@@ -1,29 +1,40 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from "url";
-import csv from "csv-parser";
 import rateLimit from "express-rate-limit";
-
+import cookieParser from "cookie-parser";
+import crypto from "crypto";
 const app = express();
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://vamoos-clips.onrender.com"],
+    credentials: true, // важливо для кукі
   })
 );
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const FRONTEND_ORIGIN =
+  process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 
 app.use(express.static(path.join(__dirname, "../dist")));
+app.use(express.json());
+app.use(cookieParser());
 
 const clipsCache = { ts: 0, data: null };
-app.use(express.json());
+
 const FORM_ACTION =
   "https://docs.google.com/forms/d/e/1FAIpQLSc9b146kmNEsIPc1ZUp7k8WBgWmISwrc46UlXLkP600OwxyeA/formResponse";
+
 const SHEETS_CSV =
   "https://docs.google.com/spreadsheets/d/1RWj4fSVFjCKxLb7U2Be6QhGizoOMJd52F0ZgIhdZxlc/export?format=csv&gid=1283374406";
+
+const FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLScRb2IZ0OwFISkJkjWTvC0cvO3dQuh3tUn179on_mEgrJ7Y0w/formResponse";
 
 const ENTRY = {
   clipUrl: "entry.526821716",
@@ -31,6 +42,9 @@ const ENTRY = {
   author: "entry.200314389",
   note: "entry.2024719700",
 };
+
+// ---------- helpers ----------
+
 function isValidHttpUrl(s) {
   try {
     const u = new URL(String(s));
@@ -39,28 +53,35 @@ function isValidHttpUrl(s) {
     return false;
   }
 }
+
 function parseCsv(text) {
   const lines = text
     .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .filter((l) => l.length);
+
   if (!lines.length) return { header: [], rows: [] };
 
   const splitSmart = (line) => {
     const out = [];
-    let cur = "",
-      inQ = false;
+    let cur = "";
+    let inQ = false;
+
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (ch === '"') {
         if (inQ && line[i + 1] === '"') {
           cur += '"';
           i++;
-        } else inQ = !inQ;
+        } else {
+          inQ = !inQ;
+        }
       } else if (ch === "," && !inQ) {
         out.push(cur);
         cur = "";
-      } else cur += ch;
+      } else {
+        cur += ch;
+      }
     }
     out.push(cur);
     return out.map((s) => s.trim());
@@ -75,10 +96,283 @@ const ALLOWED_IMG_HOSTS = new Set([
   "static-cdn.jtvnw.net",
   "clips-media-assets2.twitch.tv",
   "production.assets.clips.twitchcdn.net",
-  "static-cdn.jtvnw.net",
   "twitchcdn.net",
   "clips.twitch.tv",
 ]);
+
+function isBadThumb(url) {
+  return (
+    /twitch_logo/i.test(url) || /ttv-static-metadata\/twitch_logo/i.test(url)
+  );
+}
+function normalizeClipUrl(raw) {
+  try {
+    if (!isValidHttpUrl(raw)) return null;
+    const u = new URL(raw);
+    const p = u.pathname.split("/").filter(Boolean);
+    const i = p.findIndex((x) => x.toLowerCase() === "clip");
+
+    if (i >= 0 && p[i + 1]) {
+      return `https://clips.twitch.tv/${p[i + 1]}`;
+    }
+    if (u.hostname.includes("clips.twitch.tv")) {
+      return raw;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+async function fetchBestThumb(clipUrl) {
+  if (!isValidHttpUrl(clipUrl)) return null;
+
+  const url = normalizeClipUrl(clipUrl);
+  if (!url) return null;
+
+  const r = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      Referer: "https://www.twitch.tv/",
+    },
+  });
+
+  if (!r.ok) return null;
+
+  const html = await r.text();
+
+  // og:image
+  let m = html.match(
+    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
+  );
+  if (m && m[1] && !isBadThumb(m[1])) return m[1];
+
+  // ld+json
+  m = html.match(
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i
+  );
+  if (m && m[1]) {
+    try {
+      const json = JSON.parse(m[1]);
+      const arr = Array.isArray(json) ? json : [json];
+      for (const item of arr) {
+        const t = item?.thumbnailUrl || item?.thumbnailURL;
+        if (Array.isArray(t)) {
+          const good = t.find((u) => typeof u === "string" && !isBadThumb(u));
+          if (good) return good;
+        } else if (typeof t === "string" && !isBadThumb(t)) {
+          return t;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // fallback patterns
+  m = html.match(/https?:\/\/[^"' ]+?-preview-(480x272|260x147|86x45)\.jpg/);
+  if (m && m[0] && !isBadThumb(m[0])) return m[0];
+
+  m = html.match(/"thumbnail(?:_?url|URL)"\s*:\s*"([^"]+?)"/i);
+  if (m && m[1] && !isBadThumb(m[1])) return m[1];
+
+  return null;
+}
+
+async function sendVote({
+  categoryId,
+  categoryTitle,
+  nomineeId,
+  nomineeName,
+  voterToken,
+  userAgent,
+  nickname
+}) {
+  const body = new URLSearchParams({
+    "entry.502372731": categoryId, // category_id
+    "entry.1914997477": categoryTitle, // category_title
+    "entry.16942283": nomineeId, // nominee_id
+    "entry.604386318": nomineeName, // nominee_name
+    "entry.776989716": voterToken, // voter_token
+    "entry.1647074345": userAgent, // user_agent
+    "entry.1714317894": nickname, // user_agent    
+  });
+
+  try {
+    const res = await fetch(FORM_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body,
+    });
+
+    if (!res.ok) {
+      console.error(
+        "[sendVote] Google Form returned",
+        res.status,
+        res.statusText
+      );
+    }
+
+    return { ok: res.ok, status: res.status };
+  } catch (err) {
+    console.error("[sendVote] network error", err);
+    return { ok: false, status: 0 };
+  }
+}
+
+// ==== TWITCH AUTH CONFIG ====
+
+const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
+const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
+const TWITCH_REDIRECT_URI =
+  process.env.TWITCH_REDIRECT_URI || "http://localhost:8080/api/auth/twitch/callback";
+
+function getTwitchUserFromReq(req) {
+  const raw = req.cookies?.twitch_user;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+// ---------- Twitch login ----------
+
+app.get("/api/auth/twitch/login", (req, res) => {
+  if (!TWITCH_CLIENT_ID || !TWITCH_REDIRECT_URI) {
+    return res.status(500).send("Twitch auth is not configured");
+  }
+
+  const state = crypto.randomBytes(16).toString("hex");
+
+  // за замовчуванням /streamer-awards
+  const next =
+    typeof req.query.next === "string" ? req.query.next : "/streamer-awards";
+
+  res.cookie("twitch_oauth_state", state, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 10 * 60 * 1000,
+  });
+
+  res.cookie("twitch_oauth_next", next, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 10 * 60 * 1000,
+  });
+
+  const params = new URLSearchParams({
+    client_id: TWITCH_CLIENT_ID,
+    redirect_uri: TWITCH_REDIRECT_URI,
+    response_type: "code",
+    scope: "",
+    state,
+  });
+
+  res.redirect(`https://id.twitch.tv/oauth2/authorize?${params.toString()}`);
+});
+
+app.get("/api/auth/twitch/callback", async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    if (!code || typeof code !== "string") {
+      return res.status(400).send("Missing code");
+    }
+
+    const storedState = req.cookies?.twitch_oauth_state;
+    if (!state || state !== storedState) {
+      return res.status(400).send("Bad state");
+    }
+
+    const tokenRes = await fetch("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: TWITCH_CLIENT_ID,
+        client_secret: TWITCH_CLIENT_SECRET,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: TWITCH_REDIRECT_URI,
+      }),
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok) {
+      console.error("Twitch token error", tokenData);
+      return res.status(500).send("Twitch auth error");
+    }
+
+    const accessToken = tokenData.access_token;
+
+    const userRes = await fetch("https://api.twitch.tv/helix/users", {
+      headers: {
+        "Client-Id": TWITCH_CLIENT_ID,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const userData = await userRes.json();
+    if (!userRes.ok || !userData.data || !userData.data.length) {
+      console.error("Twitch user error", userData);
+      return res.status(500).send("Twitch user error");
+    }
+
+    const user = userData.data[0];
+    const twitchUser = {
+      id: user.id,
+      login: user.login,
+      display_name: user.display_name,
+      profile_image_url: user.profile_image_url,
+    };
+
+    res.cookie("twitch_user", JSON.stringify(twitchUser), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.clearCookie("twitch_oauth_state");
+    const rawNext = req.cookies?.twitch_oauth_next || "/streamer-awards";
+    res.clearCookie("twitch_oauth_next");
+
+    const next =
+      typeof rawNext === "string" && rawNext.startsWith("/")
+        ? rawNext
+        : "/streamer-awards";
+
+    // 🔥 головна штука: редірект на фронтовий origin
+    if (FRONTEND_ORIGIN) {
+      return res.redirect(FRONTEND_ORIGIN + next);
+    }
+
+    // fallback – той самий origin (8080)
+    return res.redirect(next);
+  } catch (e) {
+    console.error("Twitch callback error", e);
+    res.status(500).send("Twitch callback error");
+  }
+});
+
+app.get("/api/auth/twitch/me", (req, res) => {
+  const user = getTwitchUserFromReq(req);
+  if (!user) return res.json({ loggedIn: false });
+  return res.json({ loggedIn: true, user });
+});
+
+app.post("/api/auth/twitch/logout", (req, res) => {
+  res.clearCookie("twitch_user");
+  return res.json({ ok: true });
+});
+
+// ---------- /api/clips ----------
 
 app.get("/api/clips", async (req, res) => {
   try {
@@ -129,23 +423,20 @@ app.get("/api/clips", async (req, res) => {
     }
 
     let clips = rows
-      .map((cols, i) => {
+      .map((cols) => {
         const clipUrl = (cols[idx.url] ?? "").trim();
         if (!clipUrl) return null;
-        const createdAt = idx.ts >= 0 ? (cols[idx.ts] ?? "").trim() : "";
-        const title =
-          (idx.title >= 0 ? (cols[idx.title] ?? "").trim() : "") || "Без назви";
-        const author =
-          (idx.author >= 0 ? (cols[idx.author] ?? "").trim() : "") ||
-          "Невідомо";
-        const note = idx.note >= 0 ? (cols[idx.note] ?? "").trim() : "";
 
         return {
           clipUrl,
-          title: (cols[idx.title] ?? "").trim() || "Без назви",
-          author: (cols[idx.author] ?? "").trim() || "Невідомо",
-          note: (cols[idx.note] ?? "").trim(),
-          createdAt: cols[idx.ts] ?? null,
+          title:
+            (idx.title >= 0 ? (cols[idx.title] ?? "").trim() : "") ||
+            "Без назви",
+          author:
+            (idx.author >= 0 ? (cols[idx.author] ?? "").trim() : "") ||
+            "Невідомо",
+          note: idx.note >= 0 ? (cols[idx.note] ?? "").trim() : "",
+          createdAt: idx.ts >= 0 ? (cols[idx.ts] ?? "").trim() : null,
         };
       })
       .filter(Boolean);
@@ -168,7 +459,6 @@ app.get("/api/clips", async (req, res) => {
     );
 
     clips.sort((a, b) => parseDate(b.createdAt) - parseDate(a.createdAt));
-
     clips = clips.slice(0, 9);
 
     clipsCache.data = clips;
@@ -182,11 +472,86 @@ app.get("/api/clips", async (req, res) => {
       .json({ success: false, error: "Server parse error" });
   }
 });
+
+// ---------- rate limiters ----------
+
 const submitLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
   message: { success: false, error: "Забагато запитів, спробуйте пізніше" },
 });
+
+// ОКРЕМИЙ ліміт для голосування
+const awardsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60, // 60 запитів/хв з одного IP (7+ повних голосувань)
+  message: { status: "error", message: "Забагато голосів, спробуй пізніше" },
+});
+
+// ---------- /api/streamer-awards ----------
+
+const awardsMemory = new Set(); // простий анти-дубль у пам'яті сервера
+
+app.post("/api/streamer-awards", awardsLimiter, async (req, res) => {
+  
+  try {
+    const twitchUser = getTwitchUserFromReq(req);
+    if (!twitchUser || !twitchUser.id) {
+      return res
+        .status(401)
+        .json({ status: "error", message: "AUTH_REQUIRED" });
+    }
+
+    const { categoryId, categoryTitle, nomineeId, nomineeName,nickname } = req.body || {};
+
+    if (!categoryId || !nomineeId) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Missing required fields" });
+    }
+
+    const voterToken = `twitch:${twitchUser.id}`;
+    const userAgent = req.headers["user-agent"] || "";
+
+    const key = `${categoryId}::${voterToken}`;
+    if (awardsMemory.has(key)) {
+      return res.json({ status: "duplicate" });
+    }
+    console.log("vote body:", {
+      categoryId,
+      nomineeId,
+      nickname,
+      twitchUser,
+    });
+
+    const result = await sendVote({
+      categoryId,
+      categoryTitle: categoryTitle || "",
+      nomineeId,
+      nomineeName: nomineeName || "",
+      voterToken,
+      userAgent,
+      nickname
+    });
+
+    if (!result.ok) {
+      return res.status(200).json({
+        status: "error",
+        message: "Google Form не прийняла голос (status " + result.status + ")",
+      });
+    }
+
+    awardsMemory.add(key);
+    return res.json({ status: "ok" });
+  } catch (err) {
+    console.error("Streamer awards error:", err);
+    return res
+      .status(500)
+      .json({ status: "error", message: "Server error submitting vote" });
+  }
+});
+
+// ---------- /api/submit (кліпи) ----------
 
 app.post("/api/submit", submitLimiter, async (req, res) => {
   try {
@@ -215,59 +580,179 @@ app.post("/api/submit", submitLimiter, async (req, res) => {
   }
 });
 
-function isBadThumb(url) {
-  return (
-    /twitch_logo/i.test(url) || /ttv-static-metadata\/twitch_logo/i.test(url)
-  );
-}
-async function fetchBestThumb(clipUrl) {
-  if (!isValidHttpUrl(clipUrl)) return null; // ⬅️ важливо
-  const url = normalizeClipUrl(clipUrl);
+// кеш аватарок в пам'яті
+const twitchAvatarCache = new Map();
 
-  const r = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      Referer: "https://www.twitch.tv/",
-    },
-  });
-  if (!r.ok) return null;
+async function fetchTwitchAvatar(login) {
+  const key = String(login || "").trim().toLowerCase();
+  if (!key) return null;
 
-  const html = await r.text();
-
-  let m = html.match(
-    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
-  );
-  if (m && m[1] && !isBadThumb(m[1])) return m[1];
-
-  m = html.match(
-    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i
-  );
-  if (m && m[1]) {
-    try {
-      const json = JSON.parse(m[1]);
-      const arr = Array.isArray(json) ? json : [json];
-      for (const item of arr) {
-        const t = item?.thumbnailUrl || item?.thumbnailURL;
-        if (Array.isArray(t)) {
-          const good = t.find((u) => typeof u === "string" && !isBadThumb(u));
-          if (good) return good;
-        } else if (typeof t === "string" && !isBadThumb(t)) {
-          return t;
-        }
-      }
-    } catch {}
+  const now = Date.now();
+  const cached = twitchAvatarCache.get(key);
+  if (cached && now - cached.ts < 60 * 60 * 1000) {
+    return cached.url;
   }
 
-  m = html.match(/https?:\/\/[^"' ]+?-preview-(480x272|260x147|86x45)\.jpg/);
-  if (m && m[0] && !isBadThumb(m[0])) return m[0];
+  const pageUrl = `https://www.twitch.tv/${encodeURIComponent(key)}`;
 
-  m = html.match(/"thumbnail(?:_?url|URL)"\s*:\s*"([^"]+?)"/i);
-  if (m && m[1] && !isBadThumb(m[1])) return m[1];
+  try {
+    // Додаємо timeout через AbortController
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд timeout
+
+    const r = await fetch(pageUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Referer: "https://www.twitch.tv/",
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!r.ok) {
+      return null;
+    }
+
+    const html = await r.text();
+
+    // Метод 1: og:image meta тег
+    let m = html.match(
+      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
+    );
+    if (m && m[1] && !m[1].includes("twitch_logo")) {
+      const url = m[1];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 2: twitter:image meta тег
+    m = html.match(
+      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i
+    );
+    if (m && m[1] && !m[1].includes("twitch_logo")) {
+      const url = m[1];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 3: JSON-LD
+    m = html.match(
+      /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i
+    );
+    if (m && m[1]) {
+      try {
+        const json = JSON.parse(m[1]);
+        const arr = Array.isArray(json) ? json : [json];
+        for (const item of arr) {
+          const img = item?.image || item?.thumbnailUrl || item?.thumbnailURL;
+          if (
+            typeof img === "string" &&
+            img.startsWith("http") &&
+            !img.includes("twitch_logo")
+          ) {
+            twitchAvatarCache.set(key, { url: img, ts: now });
+            return img;
+          }
+          if (img && typeof img === "object" && img.url && typeof img.url === "string") {
+            if (img.url.startsWith("http") && !img.url.includes("twitch_logo")) {
+              twitchAvatarCache.set(key, { url: img.url, ts: now });
+              return img.url;
+            }
+          }
+        }
+      } catch {
+        // ignore JSON parse errors
+      }
+    }
+
+    // Метод 4
+    m = html.match(
+      /data-a-target=["']user-avatar["'][^>]*src=["']([^"']+)["']/i
+    );
+    if (m && m[1] && !m[1].includes("twitch_logo")) {
+      const url = m[1];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 5
+    m = html.match(/profileImageURL["']?\s*[:=]\s*["']([^"']+)["']/i);
+    if (m && m[1] && !m[1].includes("twitch_logo")) {
+      const url = m[1];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 6
+    m = html.match(
+      /https?:\/\/static-cdn\.jtvnw\.net\/jtv_user_pictures\/([^"'\s<>]+)/i
+    );
+    if (m && m[0] && !m[0].includes("twitch_logo")) {
+      const url = m[0];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 7
+    m = html.match(
+      /<img[^>]*(?:class|data-a-target)=[^>]*avatar[^>]*src=["']([^"']+)["']/i
+    );
+    if (
+      m &&
+      m[1] &&
+      !m[1].includes("twitch_logo") &&
+      m[1].includes("jtvnw.net")
+    ) {
+      const url = m[1];
+      twitchAvatarCache.set(key, { url, ts: now });
+      return url;
+    }
+
+    // Метод 8
+    const allJtvnwMatches = html.matchAll(
+      /https?:\/\/[^"'\s<>]*jtvnw\.net[^"'\s<>]*/gi
+    );
+    for (const match of allJtvnwMatches) {
+      const url = match[0];
+      if (url && !url.includes("twitch_logo") && url.includes("user_pictures")) {
+        twitchAvatarCache.set(key, { url, ts: now });
+        return url;
+      }
+    }
+  } catch (e) {
+    if (e.name === "AbortError") {
+      // timeout
+    }
+  }
 
   return null;
 }
+
+// === РОУТ ДЛЯ ФРОНТА ===
+app.get("/api/twitch-avatar", async (req, res) => {
+  try {
+    const login = String(req.query.login || "").trim().toLowerCase();
+    if (!login) {
+      return res.status(400).json({ error: "Missing login" });
+    }
+
+    const url = await fetchTwitchAvatar(login);
+    if (!url) {
+      return res.status(404).json({ error: "Avatar not found" });
+    }
+
+    return res.json({ url });
+  } catch (e) {
+    console.error("[avatar] route error", e);
+    return res.status(500).json({ error: "Avatar fetch error" });
+  }
+});
+
+// ---------- /api/clip-preview ----------
 
 app.get("/api/clip-preview", async (req, res) => {
   try {
@@ -280,9 +765,10 @@ app.get("/api/clip-preview", async (req, res) => {
     ) {
       return res.status(400).json({ error: "Bad url" });
     }
-    const url = raw;
 
+    const url = raw;
     let data = null;
+
     try {
       const oe =
         "https://clips.twitch.tv/oembed?format=json&url=" +
@@ -294,7 +780,9 @@ app.get("/api/clip-preview", async (req, res) => {
         },
       });
       if (r.ok) data = await r.json();
-    } catch {}
+    } catch {
+      // ignore
+    }
 
     let thumbnail = data?.thumbnail_url ?? null;
     if (!thumbnail || isBadThumb(thumbnail)) {
@@ -319,16 +807,17 @@ app.get("/api/clip-preview", async (req, res) => {
   }
 });
 
+// ---------- /api/clip-thumb ----------
+
 app.get("/api/clip-thumb", async (req, res) => {
   try {
     const slug = req.query.slug;
     if (!slug) return res.status(400).json({ error: "Missing slug" });
 
     const sizes = ["480x272", "260x147", "86x45"];
-    let ok = false,
-      buf = null,
-      type = "image/jpeg",
-      status = 200;
+    let ok = false;
+    let buf = null;
+    let type = "image/jpeg";
 
     for (const sz of sizes) {
       const cdnUrl = `https://clips-media-assets2.twitch.tv/${encodeURIComponent(
@@ -374,11 +863,29 @@ app.get("/api/clip-thumb", async (req, res) => {
     return res.status(200).send(blank);
   }
 });
+
+// ---------- /api/img ----------
+
 app.get("/api/img", async (req, res) => {
   try {
     const raw = req.query.url;
-    if (!raw) return res.status(400).json({ error: "Missing url" });
-    const u = new URL(raw);
+    if (!raw) {
+      return res.status(400).json({ error: "Missing url" });
+    }
+
+    let urlString = raw;
+    try {
+      urlString = decodeURIComponent(raw);
+    } catch {
+      // ignore
+    }
+
+    let u;
+    try {
+      u = new URL(urlString);
+    } catch {
+      return res.status(400).json({ error: "Bad url" });
+    }
 
     if (!ALLOWED_IMG_HOSTS.has(u.hostname)) {
       return res.status(400).json({ error: "Host not allowed" });
@@ -408,19 +915,13 @@ app.get("/api/img", async (req, res) => {
     return res.status(200).send(blank);
   }
 });
+
+// ---------- healthcheck ----------
+
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-function normalizeClipUrl(raw) {
-  try {
-    if (!isValidHttpUrl(raw)) return null;
-    const u = new URL(raw);
-    const p = u.pathname.split("/").filter(Boolean);
-    const i = p.findIndex((x) => x.toLowerCase() === "clip");
-    if (i >= 0 && p[i + 1]) return `https://clips.twitch.tv/${p[i + 1]}`;
-    if (u.hostname.includes("clips.twitch.tv")) return raw;
-  } catch {}
-  return null;
-}
+// ---------- SPA fallback ----------
+
 app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
 });

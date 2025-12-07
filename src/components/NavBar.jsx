@@ -12,6 +12,13 @@ function NavBar() {
     "border border-white/10 shadow-[0_4px_20px_rgba(139,92,246,.25)] " +
     "transition-all duration-200 hover:shadow-[0_6px_26px_rgba(139,92,246,.35)] hover:translate-y-[-1px]";
 
+  const awardsLink =
+    "px-5 py-2 rounded-2xl text-[15px] text-white font-bold " +
+    "bg-gradient-to-br from-amber-500 to-yellow-500 " +
+    "hover:from-amber-400 hover:to-yellow-400 " +
+    "border border-amber-300/20 shadow-[0_4px_20px_rgba(251,191,36,.3)] " +
+    "transition-all duration-200 hover:shadow-[0_6px_26px_rgba(251,191,36,.5)] hover:translate-y-[-1px]";
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0c0224] shadow-[0_0_15px_rgba(139,92,246,0.4)]">
       <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
@@ -52,6 +59,10 @@ function NavBar() {
           <NavLink to="/about" className={linkBtn}>
             Про нас 👥
           </NavLink>
+          <NavLink to="/streamer-awards" className={awardsLink}>
+            Streamer Awards 2025 🏆
+          </NavLink>
+          
         </div>
       </div>
     </nav>

@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import SubmitClip from "./pages/SubmitClip";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import StreamerAwardsPage from "./pages/StreamerAwardsPage";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Route path="/submit" element={<SubmitClip />} />
           <Route path="/about" element={<About />} />
           <Route path="/*" element={<NotFound />} />
+          <Route path="/streamer-awards" element={<StreamerAwardsPage />} />
         </Routes>
       </BrowserRouter>
     </>
