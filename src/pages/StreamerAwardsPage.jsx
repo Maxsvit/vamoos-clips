@@ -73,6 +73,7 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "NeTaneToy", name: "NeTaneToy", nickname: "NeTaneToy", login: "NeTaneToy" },
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "cakeislieee", name: "cakeislieee", nickname: "cakeislieee", login: "cakeislieee" },
+  { id: "sweetlyvii", name: "sweetlyvii", nickname: "sweetlyvii", login: "sweetlyvii" },
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
