@@ -152,7 +152,8 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "fl1per4", name: "fl1per4", nickname: "fl1per4", login: "fl1per4" },
   { id: "valentinopradagucci", name: "valentinopradagucci", nickname: "valentinopradagucci", login: "valentinopradagucci" },
   { id: "xoxomka", name: "xoxomka", nickname: "xoxomka", login: "xoxomka" },
-  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" }
+  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
+  { id: "simyton", name: "simyton", nickname: "simyton", login: "simyton" }
 ];
 const DOTA_OF_THE_YEAR_NOMINEES = [
   { id: "taitake", name: "taitake", nickname: "taitake", login: "taitake" },
