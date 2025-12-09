@@ -102,6 +102,7 @@ const DEBUT_OF_THE_YEAR_NOMINEES = [
   { id: "do_minat", name: "do_minat", nickname: "do_minat", login: "do_minat" },
   { id: "Pixie_itsme", name: "Pixie_itsme", nickname: "Pixie_itsme", login: "Pixie_itsme" },
   { id: "meawkalo", name: "meawkalo", nickname: "meawkalo", login: "meawkalo" },
+  { id: "do3r1n", name: "do3r1n", nickname: "do3r1n", login: "do3r1n" },
 ];
 
 const IRL_OF_THE_YEAR_NOMINEES = [
