@@ -318,7 +318,7 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "lodianyk", name: "lodianyk", nickname: "lodianyk", login: "lodianyk" },
   { id: "yunvi_", name: "yunvi_", nickname: "yunvi_", login: "yunvi_" },
   { id: "xoxomka", name: "xoxomka", nickname: "xoxomka", login: "xoxomka" },
-  { id: "kokosovakoza", name: "kokосovakoza", nickname: "kokosovakoza", login: "kokosovakoza" },
+  { id: "kokosovakoza", name: "kokosovakoza", nickname: "kokosovakoza", login: "kokosovakoza" },
   { id: "NeTaneToy", name: "NeTaneToy", nickname: "NeTaneToy", login: "NeTaneToy" },
   { id: "panmykolai", name: "panmykolai", nickname: "panmykolai", login: "panmykolai" },
   { id: "sviaks", name: "sviaks", nickname: "sviaks", login: "sviaks" },
