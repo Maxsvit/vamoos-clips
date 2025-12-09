@@ -74,7 +74,9 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "cakeislieee", name: "cakeislieee", nickname: "cakeislieee", login: "cakeislieee" },
   { id: "sweetlyvii", name: "sweetlyvii", nickname: "sweetlyvii", login: "sweetlyvii" },
-  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" }
+  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
+  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
+  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -172,6 +174,8 @@ const DOTA_OF_THE_YEAR_NOMINEES = [
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
+  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
+  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
   { id: "leb1ga", name: "Leb1ga", nickname: "leb1ga", login: "leb1ga" },
   { id: "thetremba", name: "TheTremba", nickname: "thetremba", login: "thetremba" },
   { id: "valentinopradagucci", name: "valentinopradagucci", nickname: "valentinopradagucci", login: "valentinopradagucci" },
@@ -326,6 +330,7 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
+  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
   { id: "leb1ga", name: "Leb1ga", nickname: "leb1ga", login: "leb1ga" },
