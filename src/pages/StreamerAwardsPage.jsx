@@ -74,6 +74,7 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "cakeislieee", name: "cakeislieee", nickname: "cakeislieee", login: "cakeislieee" },
   { id: "sweetlyvii", name: "sweetlyvii", nickname: "sweetlyvii", login: "sweetlyvii" },
+  { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -122,6 +123,7 @@ const IRL_OF_THE_YEAR_NOMINEES = [
   { id: "karus1k", name: "karus1k", nickname: "karus1k", login: "karus1k" },
   { id: "bilyiiii", name: "bilyiiii", nickname: "bilyiiii", login: "bilyiiii" },
   { id: "rpoxu", name: "rpoxu", nickname: "rpoxu", login: "rpoxu" },
+  { id: "ukrsoulful", name: "ukrsoulful", nickname: "ukrsoulful", login: "ukrsoulful" }
 ];
 
 const VTUBER_OF_THE_YEAR_NOMINEES = [
