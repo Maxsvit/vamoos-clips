@@ -75,8 +75,7 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "cakeislieee", name: "cakeislieee", nickname: "cakeislieee", login: "cakeislieee" },
   { id: "sweetlyvii", name: "sweetlyvii", nickname: "sweetlyvii", login: "sweetlyvii" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
-  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
-  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
+  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -330,7 +329,8 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "do_minat", name: "do_minat", nickname: "do_minat", login: "do_minat" },
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
   { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
-  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" }
+  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" },
+  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
