@@ -158,7 +158,8 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "valentinopradagucci", name: "valentinopradagucci", nickname: "valentinopradagucci", login: "valentinopradagucci" },
   { id: "xoxomka", name: "xoxomka", nickname: "xoxomka", login: "xoxomka" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
-  { id: "simyton", name: "simyton", nickname: "simyton", login: "simyton" }
+  { id: "simyton", name: "simyton", nickname: "simyton", login: "simyton" },
+  { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" }
 ];
 const DOTA_OF_THE_YEAR_NOMINEES = [
   { id: "taitake", name: "taitake", nickname: "taitake", login: "taitake" },
@@ -328,6 +329,8 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "Daelon02", name: "Daelon02", nickname: "Daelon02", login: "Daelon02" },
   { id: "do_minat", name: "do_minat", nickname: "do_minat", login: "do_minat" },
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
+  { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
+  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" }
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
@@ -420,6 +423,8 @@ const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "villanelle_9", name: "villanelle_9", nickname: "villanelle_9", login: "villanelle_9" },
   { id: "Daelon02", name: "Daelon02", nickname: "Daelon02", login: "Daelon02" },
   { id: "do_minat", name: "do_minat", nickname: "do_minat", login: "do_minat" },
+  { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
+  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" }
 ];
 
 const CATEGORIES = [
