@@ -1156,15 +1156,15 @@ export default function StreamerAwardsPage() {
       )}
       <section className="border-t border-slate-800 bg-[#050509]">
               <div className="mx-auto max-w-6xl px-4 py-8 md:py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div className="max-w-xl text-sm text-slate-300">
-                  <h2 className="text-base font-semibold mb-2">
+                <div className="text-center lg:text-left max-w-xl text-sm text-slate-300">
+                  <h2 className="text-base  font-semibold mb-2">
                     Підтримати нас
                   </h2>
                   <p className="mb-2">
                     Ми не маємо спонсора і робимо все на ентузіазмі. Але всеодно хочемо допомогти якось зсу, тому все що надійде на цю банку, то відправимо на якийсь збір стрімерів і гроші підуть в добру справу.
                   </p>
                 </div>
-                <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl border bg-black/60 flex items-center justify-center overflow-hidden">
+                <div className="mx-auto lg:mx-0 w-40 h-40 md:w-48 md:h-48 rounded-2xl border bg-black/60 flex items-center justify-center overflow-hidden">
                   {/* Замінити на реальний QR-код Монобанки */}
                   <img
                     src={code}
@@ -1251,51 +1251,28 @@ export default function StreamerAwardsPage() {
                 </div>
               )}
 
-              {isSearchableCategory ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[680px] overflow-y-auto pr-2">
-                  {nomineesToShow.map((nominee) => {
-                    const isSelected = selectedNominees[cat.id] === nominee.id;
-                    return (
-                      <StreamerCard
-                        key={nominee.id}
-                        categoryId={cat.id}
-                        nominee={nominee}
-                        isSelected={isSelected}
-                        onSelect={handleSelect}
-                        className=""
-                      />
-                    );
-                  })}
+              {/* Сітка 3 рядки для всіх категорій */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[680px] overflow-y-auto pr-2">
+                {nomineesToShow.map((nominee) => {
+                  const isSelected = selectedNominees[cat.id] === nominee.id;
+                  return (
+                    <StreamerCard
+                      key={nominee.id}
+                      categoryId={cat.id}
+                      nominee={nominee}
+                      isSelected={isSelected}
+                      onSelect={handleSelect}
+                      className=""
+                    />
+                  );
+                })}
 
-                  {nomineesToShow.length === 0 && (
-                    <div className="col-span-full text-sm text-slate-400">
-                      Нічого не знайдено за цим запитом.
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-                  {nomineesToShow.map((nominee) => {
-                    const isSelected = selectedNominees[cat.id] === nominee.id;
-                    return (
-                      <StreamerCard
-                        key={nominee.id}
-                        categoryId={cat.id}
-                        nominee={nominee}
-                        isSelected={isSelected}
-                        onSelect={handleSelect}
-                        className="snap-start min-w-[240px] md:min-w-[260px]"
-                      />
-                    );
-                  })}
-
-                  {nomineesToShow.length === 0 && (
-                    <div className="text-sm text-slate-400">
-                      Нічого не знайдено за цим запитом.
-                    </div>
-                  )}
-                </div>
-              )}
+                {nomineesToShow.length === 0 && (
+                  <div className="col-span-full text-sm text-slate-400">
+                    Нічого не знайдено за цим запитом.
+                  </div>
+                )}
+              </div>
             </article>
           );
         })}
