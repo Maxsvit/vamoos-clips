@@ -1,5 +1,5 @@
 import "./index.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import SubmitClip from "./pages/SubmitClip";
@@ -17,8 +17,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/submit" element={<SubmitClip />} />
           <Route path="/about" element={<About />} />
-          <Route path="/*" element={<NotFound />} />
           <Route path="/viewers-choice" element={<StreamerAwardsPage />} />
+          {/* Редірект зі старого URL на новий */}
+          <Route path="/streamer-awards" element={<Navigate to="/viewers-choice" replace />} />
+          <Route path="/*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>
