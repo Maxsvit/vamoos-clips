@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import code from "../assets/img/qr-code.jpg"
+import code from "../assets/img/qr-code.jpg";
+import YouTubeSection from "../components/YouTubeSection";
+import Footer from "../components/Footer";
 
 const VOTE_API_URL = "/api/viewers-choice";
 const VOTER_TOKEN_KEY = "vamoos_awards_voter_id";
@@ -167,7 +169,8 @@ const VTUBER_OF_THE_YEAR_NOMINEES = [
   { id: "blessed_blest", name: "blessed_blest", nickname: "blessed_blest", login: "blessed_blest" },
   { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
   { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
-  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" }
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
+  { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
 ];
 const CS_OF_THE_YEAR_NOMINEES = [
   { id: "masllory", name: "masllory", nickname: "masllory", login: "masllory" },
@@ -294,10 +297,13 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" },
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
   { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
-  { id: "token", name: "token", nickname: "token", login: "token" }
+  { id: "token", name: "token", nickname: "token", login: "token" },
+  { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
+  { id: "archi_bones", name: "archi_bones", nickname: "archi_bones", login: "archi_bones" }
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
   { id: "token", name: "token", nickname: "token", login: "token" },
   { id: "truefalseplay", name: "truefalseplay", nickname: "truefalseplay", login: "truefalseplay" },
   { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
@@ -476,7 +482,8 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
   { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
   { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
-  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" }
+  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" },
+  { id: "archi_bones", name: "archi_bones", nickname: "archi_bones", login: "archi_bones" }
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
@@ -579,7 +586,9 @@ const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "Daelon02", name: "Daelon02", nickname: "Daelon02", login: "Daelon02" },
   { id: "do_minat", name: "do_minat", nickname: "do_minat", login: "do_minat" },
   { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
-  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" }
+  { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" },
+  { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
+  { id: "archi_bones", name: "archi_bones", nickname: "archi_bones", login: "archi_bones" }
 ];
 
 const CATEGORIES = [
@@ -1336,7 +1345,7 @@ export default function StreamerAwardsPage() {
                 У нас є прекрасний хлопчик, який може відповісти на всі ваші питання.
                 <a href="https://t.me/NosochokShkarpetkovych" className="text-amber-400 hover:text-amber-300">
                    <br />
-                   @NosochokShkarpetkovych
+                   тг: @NosochokShkarpetkovych
                 </a>
               </p>
             </div>
@@ -1359,6 +1368,10 @@ export default function StreamerAwardsPage() {
           </div>
         </div>
       )}
+        {/* YouTube секція */}
+        <YouTubeSection />
+        <Footer />
     </main>
   );
+  
 }
