@@ -298,7 +298,6 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
-  { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
   { id: "token", name: "token", nickname: "token", login: "token" },
   { id: "truefalseplay", name: "truefalseplay", nickname: "truefalseplay", login: "truefalseplay" },
   { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
@@ -309,7 +308,6 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "polivalko", name: "polivalko", nickname: "polivalko", login: "polivalko" },
   { id: "yuzia_online", name: "yuzia_online", nickname: "yuzia_online", login: "yuzia_online" },
   { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" },
-  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
   { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
@@ -478,7 +476,7 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
   { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
   { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
-  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" },
+  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" }
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
