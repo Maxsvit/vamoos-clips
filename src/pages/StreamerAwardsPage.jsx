@@ -81,8 +81,7 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "vtomleni", name: "vtomleni", nickname: "vtomleni", login: "vtomleni" },
   { id: "Lady_Skeify", name: "Lady_Skeify", nickname: "Lady_Skeify", login: "Lady_Skeify" },
   { id: "Karmaliya", name: "Karmaliya", nickname: "Karmaliya", login: "Karmaliya" },
-  { id: "mamura_senpai", name: "mamura_senpai", nickname: "mamura_senpai", login: "mamura_senpai" },
-  { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" }
+  { id: "mamura_senpai", name: "mamura_senpai", nickname: "mamura_senpai", login: "mamura_senpai" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -272,6 +271,7 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" },
   { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
@@ -435,6 +435,7 @@ const ALL_OF_THE_YEAR_NOMINEES = [
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
+  { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
   { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
@@ -622,10 +623,10 @@ function getStreamerWord(count) {
   const n = Math.abs(count) % 100;
   const n1 = n % 10;
 
-  if (n > 10 && n < 20) return "стрімерів";
-  if (n1 === 1) return "стрімер";
-  if (n1 >= 2 && n1 <= 4) return "стрімери";
-  return "стрімерів";
+  if (n > 10 && n < 20) return "стримерів";
+  if (n1 === 1) return "стример";
+  if (n1 >= 2 && n1 <= 4) return "стримери";
+  return "стримерів";
 }
 
 function StreamerCard({
@@ -990,7 +991,7 @@ export default function StreamerAwardsPage() {
             Viewers Choice 2025
           </h1>
           <p className="text-slate-300 max-w-2xl text-center mx-auto">
-          Вибери свого фаворита в кожній категорії, а потім натисни одну кнопку, щоб віддати голос. Один комплект голосів з одного Twitch-акаунту. Після завершення голосування ми зробимо відео з результатами, а всі підсумки покажемо у відкритій таблиці. Стрімери, які переможуть, отримають ще й символічні подарунки — але які саме, хай поки залишиться маленьким секретом.
+          Вибери свого фаворита в кожній категорії, а потім натисни одну кнопку, щоб віддати голос. Один комплект голосів з одного Twitch-акаунту. Після завершення голосування ми зробимо відео з результатами, а всі підсумки покажемо у відкритій таблиці. Стримери, які переможуть, отримають ще й символічні подарунки — але які саме, хай поки залишиться маленьким секретом.
           </p>
 
           {/* таймер */}
