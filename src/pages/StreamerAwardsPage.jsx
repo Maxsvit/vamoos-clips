@@ -75,7 +75,14 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "cakeislieee", name: "cakeislieee", nickname: "cakeislieee", login: "cakeislieee" },
   { id: "sweetlyvii", name: "sweetlyvii", nickname: "sweetlyvii", login: "sweetlyvii" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
-  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" }
+  { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
+  { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "Tse_Jenya_i_Anya", name: "Tse_Jenya_i_Anya", nickname: "Tse_Jenya_i_Anya", login: "Tse_Jenya_i_Anya" },
+  { id: "vtomleni", name: "vtomleni", nickname: "vtomleni", login: "vtomleni" },
+  { id: "Lady_Skeify", name: "Lady_Skeify", nickname: "Lady_Skeify", login: "Lady_Skeify" },
+  { id: "Karmaliya", name: "Karmaliya", nickname: "Karmaliya", login: "Karmaliya" },
+  { id: "mamura_senpai", name: "mamura_senpai", nickname: "mamura_senpai", login: "mamura_senpai" },
+  { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -106,7 +113,12 @@ const DEBUT_OF_THE_YEAR_NOMINEES = [
   { id: "Pixie_itsme", name: "Pixie_itsme", nickname: "Pixie_itsme", login: "Pixie_itsme" },
   { id: "meawkalo", name: "meawkalo", nickname: "meawkalo", login: "meawkalo" },
   { id: "do3r1n", name: "do3r1n", nickname: "do3r1n", login: "do3r1n" },
-  { id: "mr__brom", name: "mr__brom", nickname: "mr__brom", login: "mr__brom" }
+  { id: "mr__brom", name: "mr__brom", nickname: "mr__brom", login: "mr__brom" },
+  { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "zdarovaotec112", name: "zdarovaotec112", nickname: "zdarovaotec112", login: "zdarovaotec112" },
+  { id: "r0r1ch", name: "r0r1ch", nickname: "r0r1ch", login: "r0r1ch" },
+  { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
+  { id: "mariksa02", name: "mariksa02", nickname: "mariksa02", login: "mariksa02" }
 ];
 
 const IRL_OF_THE_YEAR_NOMINEES = [
@@ -139,6 +151,7 @@ const VTUBER_OF_THE_YEAR_NOMINEES = [
   { id: "marinade_vtuber", name: "marinade_vtuber", nickname: "marinade_vtuber", login: "marinade_vtuber" },
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
+  { id: "aldo_vt", name: "aldo_vt", nickname: "aldo_vt", login: "aldo_vt" } 
 ];
 const CS_OF_THE_YEAR_NOMINEES = [
   { id: "masllory", name: "masllory", nickname: "masllory", login: "masllory" },
@@ -258,6 +271,8 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
+  { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
   { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
@@ -421,6 +436,7 @@ const ALL_OF_THE_YEAR_NOMINEES = [
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
+  { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
   { id: "leb1ga", name: "Leb1ga", nickname: "leb1ga", login: "leb1ga" },
@@ -971,7 +987,7 @@ export default function StreamerAwardsPage() {
             🏆 Народний
           </p>
           <h1 className="text-3xl md:text-4xl font-extrabold mb-3">
-            Streamer Awards 2025
+            Viewers Choice 2025
           </h1>
           <p className="text-slate-300 max-w-2xl text-center mx-auto">
           Вибери свого фаворита в кожній категорії, а потім натисни одну кнопку, щоб віддати голос. Один комплект голосів з одного Twitch-акаунту. Після завершення голосування ми зробимо відео з результатами, а всі підсумки покажемо у відкритій таблиці. Стрімери, які переможуть, отримають ще й символічні подарунки — але які саме, хай поки залишиться маленьким секретом.
