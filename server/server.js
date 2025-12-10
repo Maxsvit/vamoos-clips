@@ -251,9 +251,9 @@ app.get("/api/auth/twitch/login", (req, res) => {
 
   const state = crypto.randomBytes(16).toString("hex");
 
-  // за замовчуванням /streamer-awards
+  // за замовчуванням /viewers-choice
   const next =
-    typeof req.query.next === "string" ? req.query.next : "/streamer-awards";
+    typeof req.query.next === "string" ? req.query.next : "/viewers-choice";
 
   res.cookie("twitch_oauth_state", state, {
     httpOnly: true,
@@ -341,13 +341,13 @@ app.get("/api/auth/twitch/callback", async (req, res) => {
     });
 
     res.clearCookie("twitch_oauth_state");
-    const rawNext = req.cookies?.twitch_oauth_next || "/streamer-awards";
+    const rawNext = req.cookies?.twitch_oauth_next || "/viewers-choice";
     res.clearCookie("twitch_oauth_next");
 
     const next =
       typeof rawNext === "string" && rawNext.startsWith("/")
         ? rawNext
-        : "/streamer-awards";
+        : "/viewers-choice";
 
     // 🔥 головна штука: редірект на фронтовий origin
     if (FRONTEND_ORIGIN) {
@@ -489,11 +489,11 @@ const awardsLimiter = rateLimit({
   message: { status: "error", message: "Забагато голосів, спробуй пізніше" },
 });
 
-// ---------- /api/streamer-awards ----------
+// ---------- /api/viewers-choice ----------
 
 const awardsMemory = new Set(); // простий анти-дубль у пам'яті сервера
 
-app.post("/api/streamer-awards", awardsLimiter, async (req, res) => {
+app.post("/api/viewers-choice", awardsLimiter, async (req, res) => {
   
   try {
     const twitchUser = getTwitchUserFromReq(req);

@@ -18,7 +18,7 @@ function App() {
           <Route path="/submit" element={<SubmitClip />} />
           <Route path="/about" element={<About />} />
           <Route path="/*" element={<NotFound />} />
-          <Route path="/streamer-awards" element={<StreamerAwardsPage />} />
+          <Route path="/viewers-choice" element={<StreamerAwardsPage />} />
         </Routes>
       </BrowserRouter>
     </>

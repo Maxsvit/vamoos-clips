@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import code from "../assets/img/qr-code.jpg"
 
-const VOTE_API_URL = "/api/streamer-awards";
+const VOTE_API_URL = "/api/viewers-choice";
 const VOTER_TOKEN_KEY = "vamoos_awards_voter_id";
 const HAS_VOTED_KEY = "vamoos_awards_has_voted";
 
@@ -81,7 +81,18 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "vtomleni", name: "vtomleni", nickname: "vtomleni", login: "vtomleni" },
   { id: "Lady_Skeify", name: "Lady_Skeify", nickname: "Lady_Skeify", login: "Lady_Skeify" },
   { id: "Karmaliya", name: "Karmaliya", nickname: "Karmaliya", login: "Karmaliya" },
-  { id: "mamura_senpai", name: "mamura_senpai", nickname: "mamura_senpai", login: "mamura_senpai" }
+  { id: "mamura_senpai", name: "mamura_senpai", nickname: "mamura_senpai", login: "mamura_senpai" },
+  { id: "yanakama07", name: "yanakama07", nickname: "yanakama07", login: "yanakama07" },
+  { id: "yuzia_online", name: "yuzia_online", nickname: "yuzia_online", login: "yuzia_online" },
+  { id: "stervo_", name: "stervo_", nickname: "stervo_", login: "stervo_" },
+  { id: "polivalko", name: "polivalko", nickname: "polivalko", login: "polivalko" },
+  { id: "fir_fi_", name: "fir_fi_", nickname: "fir_fi_", login: "fir_fi_" },
+  { id: "blessed_blest", name: "blessed_blest", nickname: "blessed_blest", login: "blessed_blest" },
+  { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
+  { id: "sekhmet_dmn", name: "sekhmet_dmn", nickname: "sekhmet_dmn", login: "sekhmet_dmn" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
+  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" },
+  { id: "token", name: "token", nickname: "token", login: "token" }
 ];
 
 const DEBUT_OF_THE_YEAR_NOMINEES = [
@@ -150,7 +161,13 @@ const VTUBER_OF_THE_YEAR_NOMINEES = [
   { id: "marinade_vtuber", name: "marinade_vtuber", nickname: "marinade_vtuber", login: "marinade_vtuber" },
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
-  { id: "aldo_vt", name: "aldo_vt", nickname: "aldo_vt", login: "aldo_vt" } 
+  { id: "aldo_vt", name: "aldo_vt", nickname: "aldo_vt", login: "aldo_vt" },
+  { id: "yanakama07", name: "yanakama07", nickname: "yanakama07", login: "yanakama07" },
+  { id: "fir_fi_", name: "fir_fi_", nickname: "fir_fi_", login: "fir_fi_" },
+  { id: "blessed_blest", name: "blessed_blest", nickname: "blessed_blest", login: "blessed_blest" },
+  { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
+  { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" }
 ];
 const CS_OF_THE_YEAR_NOMINEES = [
   { id: "masllory", name: "masllory", nickname: "masllory", login: "masllory" },
@@ -172,7 +189,8 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "xoxomka", name: "xoxomka", nickname: "xoxomka", login: "xoxomka" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
   { id: "simyton", name: "simyton", nickname: "simyton", login: "simyton" },
-  { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" }
+  { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
+  { id: "minozavr", name: "minozavr", nickname: "minozavr", login: "minozavr" }
 ];
 const DOTA_OF_THE_YEAR_NOMINEES = [
   { id: "taitake", name: "taitake", nickname: "taitake", login: "taitake" },
@@ -188,6 +206,13 @@ const DOTA_OF_THE_YEAR_NOMINEES = [
 ]
 const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
+  { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
+  { id: "twaryna", name: "twaryna", nickname: "twaryna", login: "twaryna" },
+  { id: "sekhmet_dmn", name: "sekhmet_dmn", nickname: "sekhmet_dmn", login: "sekhmet_dmn" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
+  { id: "truefalseplay", name: "truefalseplay", nickname: "truefalseplay", login: "truefalseplay" },
+  { id: "polivalko", name: "polivalko", nickname: "polivalko", login: "polivalko" },
+  { id: "yuzia_online", name: "yuzia_online", nickname: "yuzia_online", login: "yuzia_online" },
   { id: "lizetkaa", name: "lizetkaa", nickname: "lizetkaa", login: "lizetkaa" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
   { id: "thetremba", name: "TheTremba", nickname: "thetremba", login: "thetremba" },
@@ -267,11 +292,24 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "Daelon02", name: "Daelon02", nickname: "Daelon02", login: "Daelon02" },
   { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
   { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" },
-  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
+  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
+  { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
+  { id: "token", name: "token", nickname: "token", login: "token" }
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
+  { id: "token", name: "token", nickname: "token", login: "token" },
+  { id: "truefalseplay", name: "truefalseplay", nickname: "truefalseplay", login: "truefalseplay" },
+  { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
+  { id: "twaryna", name: "twaryna", nickname: "twaryna", login: "twaryna" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
+  { id: "stervo_", name: "stervo_", nickname: "stervo_", login: "stervo_" },
+  { id: "sekhmet_dmn", name: "sekhmet_dmn", nickname: "sekhmet_dmn", login: "sekhmet_dmn" },
+  { id: "polivalko", name: "polivalko", nickname: "polivalko", login: "polivalko" },
+  { id: "yuzia_online", name: "yuzia_online", nickname: "yuzia_online", login: "yuzia_online" },
   { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
   { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
   { id: "trener", name: "trener", nickname: "trener", login: "trener" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
@@ -431,10 +469,25 @@ const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "pavloviypp", name: "pavloviypp", nickname: "pavloviypp", login: "pavloviypp" },
   { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
   { id: "ceh9", name: "ceh9", nickname: "ceh9", login: "ceh9" },
-  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" }
+  { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
+  { id: "skalii_", name: "skalii_", nickname: "skalii_", login: "skalii_" },
+  { id: "aldo_vt", name: "aldo_vt", nickname: "aldo_vt", login: "aldo_vt" },
+  { id: "yanakama07", name: "yanakama07", nickname: "yanakama07", login: "yanakama07" },
+  { id: "fir_fi_", name: "fir_fi_", nickname: "fir_fi_", login: "fir_fi_" },
+  { id: "blessed_blest", name: "blessed_blest", nickname: "blessed_blest", login: "blessed_blest" },
+  { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
+  { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
+  { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
+  { id: "potishka", name: "potishka", nickname: "potishka", login: "potishka" },
 ]
 const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "deko6", name: "deko6", nickname: "deko6", login: "deko6" },
+  { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
+  { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
+  { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
+  { id: "twaryna", name: "twaryna", nickname: "twaryna", login: "twaryna" },
+  { id: "tonymontony", name: "tonymontony", nickname: "tonymontony", login: "tonymontony" },
+  { id: "skalii_", name: "skalii_", nickname: "skalii_", login: "skalii_" },
   { id: "margsaur", name: "margsaur", nickname: "margsaur", login: "margsaur" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
   { id: "yourpovilitel", name: "yourpovilitel", nickname: "yourpovilitel", login: "yourpovilitel" },
@@ -1051,7 +1104,7 @@ export default function StreamerAwardsPage() {
                   Щоб проголосувати, увійди через Twitch.
                 </span>
                 <a
-                  href="/api/auth/twitch/login?next=/streamer-awards"
+                  href="/api/auth/twitch/login?next=/viewers-choice"
                   className="rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black"
                 >
                   Увійти через Twitch
@@ -1198,27 +1251,51 @@ export default function StreamerAwardsPage() {
                 </div>
               )}
 
-              <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-                {nomineesToShow.map((nominee) => {
-                  const isSelected = selectedNominees[cat.id] === nominee.id;
-                  return (
-                    <StreamerCard
-                      key={nominee.id}
-                      categoryId={cat.id}
-                      nominee={nominee}
-                      isSelected={isSelected}
-                      onSelect={handleSelect}
-                      className="snap-start min-w-[240px] md:min-w-[260px]"
-                    />
-                  );
-                })}
+              {isSearchableCategory ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[680px] overflow-y-auto pr-2">
+                  {nomineesToShow.map((nominee) => {
+                    const isSelected = selectedNominees[cat.id] === nominee.id;
+                    return (
+                      <StreamerCard
+                        key={nominee.id}
+                        categoryId={cat.id}
+                        nominee={nominee}
+                        isSelected={isSelected}
+                        onSelect={handleSelect}
+                        className=""
+                      />
+                    );
+                  })}
 
-                {nomineesToShow.length === 0 && (
-                  <div className="text-sm text-slate-400">
-                    Нічого не знайдено за цим запитом.
-                  </div>
-                )}
-              </div>
+                  {nomineesToShow.length === 0 && (
+                    <div className="col-span-full text-sm text-slate-400">
+                      Нічого не знайдено за цим запитом.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                  {nomineesToShow.map((nominee) => {
+                    const isSelected = selectedNominees[cat.id] === nominee.id;
+                    return (
+                      <StreamerCard
+                        key={nominee.id}
+                        categoryId={cat.id}
+                        nominee={nominee}
+                        isSelected={isSelected}
+                        onSelect={handleSelect}
+                        className="snap-start min-w-[240px] md:min-w-[260px]"
+                      />
+                    );
+                  })}
+
+                  {nomineesToShow.length === 0 && (
+                    <div className="text-sm text-slate-400">
+                      Нічого не знайдено за цим запитом.
+                    </div>
+                  )}
+                </div>
+              )}
             </article>
           );
         })}
@@ -1274,6 +1351,18 @@ export default function StreamerAwardsPage() {
               <p>
                 Після дедлайну голосування ({VOTING_DEADLINE_DISPLAY}) ми
                 зіб’ємо результати та опублікуємо їх у відкритому доступі.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
+              <h3 className="font-semibold mb-1 text-slate-100">
+                Кому можу написати і задати питання? 
+              </h3>
+              <p>
+                У нас є прекрасний хлопчик, який може відповісти на всі ваші питання.
+                <a href="https://t.me/NosochokShkarpetkovych" className="text-amber-400 hover:text-amber-300">
+                   <br />
+                   @NosochokShkarpetkovych
+                </a>
               </p>
             </div>
           </div>

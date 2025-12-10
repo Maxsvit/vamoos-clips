@@ -59,7 +59,7 @@ function NavBar() {
           <NavLink to="/about" className={linkBtn}>
             Про нас 👥
           </NavLink>
-          <NavLink to="/streamer-awards" className={awardsLink}>
+          <NavLink to="/viewers-choice" className={awardsLink}>
             Viewers Choice 2025 🏆
           </NavLink>
           
