@@ -204,7 +204,6 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "aalinchikss", name: "aalinchikss", nickname: "aalinchikss", login: "aalinchikss" },
   { id: "turtle_silent", name: "turtle_silent", nickname: "turtle_silent", login: "turtle_silent" },
   { id: "thunder_oleg", name: "thunder_oleg", nickname: "thunder_oleg", login: "thunder_oleg" },
-  { id: "fl1per4", name: "fl1per4", nickname: "fl1per4", login: "fl1per4" },
   { id: "valentinopradagucci", name: "valentinopradagucci", nickname: "valentinopradagucci", login: "valentinopradagucci" },
   { id: "xoxomka", name: "xoxomka", nickname: "xoxomka", login: "xoxomka" },
   { id: "fl1per4", name: "fl1per4", nickname: "fl1per4", login: "fl1per4" },
