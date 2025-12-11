@@ -181,9 +181,11 @@ const VTUBER_OF_THE_YEAR_NOMINEES = [
   { id: "fir_fi_", name: "fir_fi_", nickname: "fir_fi_", login: "fir_fi_" },
   { id: "blessed_blest", name: "blessed_blest", nickname: "blessed_blest", login: "blessed_blest" },
   { id: "shizi_kroc", name: "shizi_kroc", nickname: "shizi_kroc", login: "shizi_kroc" },
+  { id: "archi_bones", name: "archi_bones", nickname: "archi_bones", login: "archi_bones" },
   { id: "himetyanart", name: "himetyanart", nickname: "himetyanart", login: "himetyanart" },
   { id: "akililpotato", name: "akililpotato", nickname: "akililpotato", login: "akililpotato" },
   { id: "aropixel", name: "aropixel", nickname: "aropixel", login: "aropixel" },
+  { id: "kalendora", name: "kalendora", nickname: "kalendora", login: "kalendora" },
   { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
 ];
 const CS_OF_THE_YEAR_NOMINEES = [
