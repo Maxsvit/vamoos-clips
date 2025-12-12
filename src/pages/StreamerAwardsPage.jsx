@@ -247,6 +247,7 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "tati_tv", name: "tati_tv", nickname: "tati_tv", login: "tati_tv" },
   { id: "deedoseetv", name: "deedoseetv", nickname: "deedoseetv", login: "deedoseetv" },
   { id: "leniniw", name: "leniniw", nickname: "leniniw", login: "leniniw" },
+  { id: "zarikxx_", name: "zarikxx_", nickname: "zarikxx_", login: "zarikxx_" },
   { id: "minozavr", name: "minozavr", nickname: "minozavr", login: "minozavr" }
 ];
 const DOTA_OF_THE_YEAR_NOMINEES = [
