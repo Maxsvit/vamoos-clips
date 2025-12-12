@@ -15,6 +15,7 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "veron_khalepa", name: "veron_khalepa", nickname: "veron_khalepa", login: "veron_khalepa" },
   { id: "calypsopaw", name: "calypsopaw", nickname: "calypsopaw", login: "calypsopaw" },
   { id: "itsgolovna", name: "itsgolovna", nickname: "itsgolovna", login: "itsgolovna" },
+  { id: "velmira_astrid", name: "velmira_astrid", nickname: "velmira_astrid", login: "velmira_astrid" },
   { id: "nyavka", name: "nyavka", nickname: "nyavka", login: "nyavka" },
   { id: "riomyri", name: "riomyri", nickname: "riomyri", login: "riomyri" },
   { id: "maryashik", name: "maryashik", nickname: "maryashik", login: "maryashik" },
@@ -121,7 +122,13 @@ const STREAMERKA_OF_THE_YEAR_NOMINEES = [
   { id: "2xmon", name: "2xmon", nickname: "2xmon", login: "2xmon" },
   { id: "amattoart", name: "amattoart", nickname: "amattoart", login: "amattoart" },
   { id: "mini_dara", name: "mini_dara", nickname: "mini_dara", login: "mini_dara" },
+  { id: "kuaskiogb", name: "kuaskiogb", nickname: "kuaskiogb", login: "kuaskiogb" },
   { id: "dntude", name: "dntude", nickname: "dntude", login: "dntude" },
+  { id: "tvorchi_varenychky", name: "tvorchi_varenychky", nickname: "tvorchi_varenychky", login: "tvorchi_varenychky" },
+  { id: "lysychka_ri", name: "lysychka_ri", nickname: "lysychka_ri", login: "lysychka_ri" },
+  { id: "asya_ua_vtuber", name: "asya_ua_vtuber", nickname: "asya_ua_vtuber", login: "asya_ua_vtuber" },
+  { id: "wayllis", name: "wayllis", nickname: "wayllis", login: "wayllis" },
+  { id: "luyorin", name: "luyorin", nickname: "luyorin", login: "luyorin" },
   { id: "token", name: "token", nickname: "token", login: "token" }
 ];
 
@@ -193,14 +200,18 @@ const VTUBER_OF_THE_YEAR_NOMINEES = [
   { id: "Lady_Skeify", name: "Lady_Skeify", nickname: "Lady_Skeify", login: "Lady_Skeify" },
   { id: "rion_anya", name: "rion_anya", nickname: "rion_anya", login: "rion_anya" },
   { id: "ev1leye9", name: "ev1leye9", nickname: "ev1leye9", login: "ev1leye9" },
+  { id: "asya_ua_vtuber", name: "asya_ua_vtuber", nickname: "asya_ua_vtuber", login: "asya_ua_vtuber" },
   { id: "AloriWinderer", name: "AloriWinderer", nickname: "AloriWinderer", login: "AloriWinderer" },
   { id: "fowie_chan", name: "fowie_chan", nickname: "fowie_chan", login: "fowie_chan" },
   { id: "e_wexy", name: "e_wexy", nickname: "e_wexy", login: "e_wexy" },
+  { id: "wayllis", name: "wayllis", nickname: "wayllis", login: "wayllis" },
+  { id: "velmira_astrid", name: "velmira_astrid", nickname: "velmira_astrid", login: "velmira_astrid" },
   { id: "2xmon", name: "2xmon", nickname: "2xmon", login: "2xmon" },
   { id: "amanenana", name: "amanenana", nickname: "amanenana", login: "amanenana" },
   { id: "marinade_vtuber", name: "marinade_vtuber", nickname: "marinade_vtuber", login: "marinade_vtuber" },
   { id: "nata_riya", name: "nata_riya", nickname: "nata_riya", login: "nata_riya" },
   { id: "atamankit", name: "atamankit", nickname: "atamankit", login: "atamankit" },
+  { id: "luyorin", name: "luyorin", nickname: "luyorin", login: "luyorin" },
   { id: "felix_legion", name: "felix_legion", nickname: "felix_legion", login: "felix_legion" },
   { id: "aldo_vt", name: "aldo_vt", nickname: "aldo_vt", login: "aldo_vt" },
   { id: "ferxthebard", name: "ferxthebard", nickname: "ferxthebard", login: "ferxthebard" },
@@ -243,6 +254,7 @@ const CS_OF_THE_YEAR_NOMINEES = [
   { id: "fl1per4", name: "fl1per4", nickname: "fl1per4", login: "fl1per4" },
   { id: "milatnm", name: "milatnm", nickname: "milatnm", login: "milatnm" },
   { id: "simyton", name: "simyton", nickname: "simyton", login: "simyton" },
+  { id: "kuaskiogb", name: "kuaskiogb", nickname: "kuaskiogb", login: "kuaskiogb" },
   { id: "pani_pypkaa", name: "pani_pypkaa", nickname: "pani_pypkaa", login: "pani_pypkaa" },
   { id: "tati_tv", name: "tati_tv", nickname: "tati_tv", login: "tati_tv" },
   { id: "deedoseetv", name: "deedoseetv", nickname: "deedoseetv", login: "deedoseetv" },
@@ -258,6 +270,7 @@ const DOTA_OF_THE_YEAR_NOMINEES = [
   { id: "doubleespresso", name: "doubleespresso", nickname: "doubleespresso", login: "doubleespresso" },
   { id: "rakuzan777", name: "rakuzan777", nickname: "rakuzan777", login: "rakuzan777" },
   { id: "belonytv", name: "belonytv", nickname: "belonytv", login: "belonytv" },
+  { id: "lysychka_ri", name: "lysychka_ri", nickname: "lysychka_ri", login: "lysychka_ri" },
   { id: "bafik", name: "bafik", nickname: "bafik", login: "bafik" },
   { id: "jex_ua", name: "jex_ua", nickname: "jex_ua", login: "jex_ua" },
   { id: "janetty_y", name: "janetty_y", nickname: "janetty_y", login: "janetty_y" }
@@ -267,11 +280,14 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "astr0phytum", name: "astr0phytum", nickname: "astr0phytum", login: "astr0phytum" },
   { id: "slakesz", name: "slakesz", nickname: "slakesz", login: "slakesz" },
   { id: "panzavr", name: "panzavr", nickname: "panzavr", login: "panzavr" },
+  { id: "velmira_astrid", name: "velmira_astrid", nickname: "velmira_astrid", login: "velmira_astrid" },
   { id: "alex969hell", name: "alex969hell", nickname: "alex969hell", login: "alex969hell" },
+  { id: "asya_ua_vtuber", name: "asya_ua_vtuber", nickname: "asya_ua_vtuber", login: "asya_ua_vtuber" },
   { id: "fowie_chan", name: "fowie_chan", nickname: "fowie_chan", login: "fowie_chan" },
   { id: "fon_vt", name: "fon_vt", nickname: "fon_vt", login: "fon_vt" },
   { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
   { id: "twaryna", name: "twaryna", nickname: "twaryna", login: "twaryna" },
+  { id: "wayllis", name: "wayllis", nickname: "wayllis", login: "wayllis" },
   { id: "sekhmet_dmn", name: "sekhmet_dmn", nickname: "sekhmet_dmn", login: "sekhmet_dmn" },
   { id: "deedoseetv", name: "deedoseetv", nickname: "deedoseetv", login: "deedoseetv" },
   { id: "mini_dara", name: "mini_dara", nickname: "mini_dara", login: "mini_dara" },
@@ -323,6 +339,7 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "mxtokyo", name: "mxtokyo", nickname: "mxtokyo", login: "mxtokyo" },
   { id: "casuscloud", name: "casuscloud", nickname: "casuscloud", login: "casuscloud" },
   { id: "nazaretto333", name: "nazaretto333", nickname: "nazaretto333", login: "nazaretto333" },
+  { id: "kuaskiogb", name: "kuaskiogb", nickname: "kuaskiogb", login: "kuaskiogb" },
   { id: "icepepepopusk", name: "icepepepopusk", nickname: "icepepepopusk", login: "icepepepopusk" },
   { id: "olejandrooo", name: "olejandrooo", nickname: "olejandrooo", login: "olejandrooo" },
   { id: "bdjolenya", name: "bdjolenya", nickname: "bdjolenya", login: "bdjolenya" },
@@ -378,14 +395,20 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
   { id: "ferxthebard", name: "ferxthebard", nickname: "ferxthebard", login: "ferxthebard" },
+  { id: "velmira_astrid", name: "velmira_astrid", nickname: "velmira_astrid", login: "velmira_astrid" },
   { id: "amanenana", name: "amanenana", nickname: "amanenana", login: "amanenana" },
   { id: "umi_chi_umi", name: "umi_chi_umi", nickname: "umi_chi_umi", login: "umi_chi_umi" },
+  { id: "lysychka_ri", name: "lysychka_ri", nickname: "lysychka_ri", login: "lysychka_ri" },
   { id: "2xmon", name: "2xmon", nickname: "2xmon", login: "2xmon" },
+  { id: "kuaskiogb", name: "kuaskiogb", nickname: "kuaskiogb", login: "kuaskiogb" },
+  { id: "luyorin", name: "luyorin", nickname: "luyorin", login: "luyorin" },
   { id: "bananium_", name: "bananium_", nickname: "bananium_", login: "bananium_" },
   { id: "333geramori", name: "333geramori", nickname: "333geramori", login: "333geramori" },
+  { id: "wayllis", name: "wayllis", nickname: "wayllis", login: "wayllis" },
   { id: "amattoart", name: "amattoart", nickname: "amattoart", login: "amattoart" },
   { id: "ev1leye9", name: "ev1leye9", nickname: "ev1leye9", login: "ev1leye9" },
   { id: "mini_dara", name: "mini_dara", nickname: "mini_dara", login: "mini_dara" },
+  { id: "asya_ua_vtuber", name: "asya_ua_vtuber", nickname: "asya_ua_vtuber", login: "asya_ua_vtuber" },
   { id: "dntude", name: "dntude", nickname: "dntude", login: "dntude" },
   { id: "fowie_chan", name: "fowie_chan", nickname: "fowie_chan", login: "fowie_chan" },
   { id: "kyoko_ua_vtuber", name: "kyoko_ua_vtuber", nickname: "kyoko_ua_vtuber", login: "kyoko_ua_vtuber" },
@@ -1440,8 +1463,7 @@ export default function StreamerAwardsPage() {
                 Хто може голосувати?
               </h3>
               <p>
-                Голосувати може будь-хто, хто має Twitch-акаунт. Ми просимо
-                авторизацію тільки для того, щоб уникнути мультиголосування.
+                Голосувати може будь-хто, хто має Twitch-акаунт. Ми отримуємо ваш айді твіча і нік, щоб уникнути мультиголосування.
               </p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
