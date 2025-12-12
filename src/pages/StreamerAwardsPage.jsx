@@ -1031,7 +1031,7 @@ export default function StreamerAwardsPage() {
       const already = window.localStorage.getItem(HAS_VOTED_KEY) === "1";
       if (already) {
         const msgText =
-          "Ти вже відправив свої голоси з цього пристрою. Проголосувати можна тільки один раз.";
+          "Схоже, ти вже голосував. Голос можна віддати один раз з одного Twitch-акаунту.";
         setMessage({ type: "error", text: msgText });
         setPopup({
           type: "error",
