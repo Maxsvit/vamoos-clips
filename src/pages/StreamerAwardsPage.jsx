@@ -1544,6 +1544,7 @@ export default function StreamerAwardsPage() {
               </h3>
               <p>
                 У нас є прекрасний хлопчик, який може відповісти на всі ваші питання.
+                (Додавати нових людей вже не можна)
                 <a href="https://t.me/NosochokShkarpetkovych" className="text-amber-400 hover:text-amber-300">
                    <br />
                    тг: @NosochokShkarpetkovych
