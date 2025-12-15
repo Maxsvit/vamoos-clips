@@ -396,6 +396,7 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
   { id: "pol0nskyi", name: "pol0nskyi", nickname: "pol0nskyi", login: "pol0nskyi" },
   { id: "radioboyo", name: "radioboyo", nickname: "radioboyo", login: "radioboyo" },
   { id: "olehovychtut", name: "olehovychtut", nickname: "olehovychtut", login: "olehovychtut" },
+  { id: "malzaharberkut", name: "malzaharberkut", nickname: "malzaharberkut", login: "malzaharberkut" },
   { id: "v0ltm4n", name: "v0ltm4n", nickname: "v0ltm4n", login: "v0ltm4n" },
   { id: "itsmoysha", name: "itsmoysha", nickname: "itsmoysha", login: "itsmoysha" },
   { id: "mrsilly_boy", name: "mrsilly_boy", nickname: "mrsilly_boy", login: "mrsilly_boy" },
@@ -424,6 +425,7 @@ const GAMER_OF_THE_YEAR_NOMINEES = [
 ]
 const ALL_OF_THE_YEAR_NOMINEES = [
   { id: "evgeniusd", name: "evgeniusd", nickname: "evgeniusd", login: "evgeniusd" },
+  { id: "malzaharberkut", name: "malzaharberkut", nickname: "malzaharberkut", login: "malzaharberkut" },
   { id: "ferxthebard", name: "ferxthebard", nickname: "ferxthebard", login: "ferxthebard" },
   { id: "velmira_astrid", name: "velmira_astrid", nickname: "velmira_astrid", login: "velmira_astrid" },
   { id: "amanenana", name: "amanenana", nickname: "amanenana", login: "amanenana" },
@@ -677,6 +679,7 @@ const STREAMER_OF_THE_YEAR_NOMINEES = [
   { id: "panzavr", name: "panzavr", nickname: "panzavr", login: "panzavr" },
   { id: "morymukh", name: "morymukh", nickname: "morymukh", login: "morymukh" },
   { id: "ev1leye9", name: "ev1leye9", nickname: "ev1leye9", login: "ev1leye9" },
+  { id: "malzaharberkut", name: "malzaharberkut", nickname: "malzaharberkut", login: "malzaharberkut" },
   { id: "ptizasinitsa", name: "ptizasinitsa", nickname: "ptizasinitsa", login: "ptizasinitsa" },
   { id: "pyvnyiflex", name: "pyvnyiflex", nickname: "pyvnyiflex", login: "pyvnyiflex" },
   { id: "dannyelgray", name: "dannyelgray", nickname: "dannyelgray", login: "dannyelgray" },
