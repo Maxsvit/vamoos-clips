@@ -33,8 +33,17 @@ const FORM_ACTION =
 const SHEETS_CSV =
   "https://docs.google.com/spreadsheets/d/1RWj4fSVFjCKxLb7U2Be6QhGizoOMJd52F0ZgIhdZxlc/export?format=csv&gid=1283374406";
 
+// НОВА ФОРМА (стара була заблокована Google через rate limit)
 const FORM_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLScRb2IZ0OwFISkJkjWTvC0cvO3dQuh3tUn179on_mEgrJ7Y0w/formResponse";
+  "https://docs.google.com/forms/d/e/1FAIpQLScWD4RDTZ-U7PZ82-7NUyZ0F0S5RjH_1NKeV281tpfolHoF2w/formResponse";
+
+// Google Sheets з голосами (для завантаження існуючих голосів при старті)
+const VOTES_SHEETS = [
+  // СТАРА таблиця (1000+ голосів) - щоб не дати проголосувати повторно
+  "https://docs.google.com/spreadsheets/d/1dpZDr_Z78StRiDv50NrT6RatbFUaPHKgtm5swXxx9qI/export?format=csv&gid=1629598865",
+  // НОВА таблиця
+  "https://docs.google.com/spreadsheets/d/1sPo-k6A39P70vu_teARSrJ6Mjvijay-9Hd6mjtnMWLI/export?format=csv&gid=992892013",
+];
 
 const ENTRY = {
   clipUrl: "entry.526821716",
@@ -181,7 +190,39 @@ async function fetchBestThumb(clipUrl) {
   return null;
 }
 
-async function sendVote({
+// ========== ЧЕРГА ГОЛОСІВ (щоб не спамити Google Forms) ==========
+const voteQueue = [];
+let isProcessingQueue = false;
+
+async function processVoteQueue() {
+  if (isProcessingQueue) return;
+  isProcessingQueue = true;
+
+  while (voteQueue.length > 0) {
+    const { voteData, resolve } = voteQueue.shift();
+    
+    const result = await sendVoteToGoogle(voteData);
+    resolve(result);
+
+    // Затримка між голосами (1.5-2.5 секунди)
+    if (voteQueue.length > 0) {
+      const delay = 1500 + Math.random() * 1000;
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+
+  isProcessingQueue = false;
+}
+
+function sendVote(voteData) {
+  return new Promise((resolve) => {
+    voteQueue.push({ voteData, resolve });
+    console.log(`[voteQueue] Added vote, queue size: ${voteQueue.length}`);
+    processVoteQueue();
+  });
+}
+
+async function sendVoteToGoogle({
   categoryId,
   categoryTitle,
   nomineeId,
@@ -190,14 +231,15 @@ async function sendVote({
   userAgent,
   nickname
 }) {
+  // НОВІ entry ID для нової форми
   const body = new URLSearchParams({
-    "entry.502372731": categoryId, // category_id
-    "entry.1914997477": categoryTitle, // category_title
-    "entry.16942283": nomineeId, // nominee_id
-    "entry.604386318": nomineeName, // nominee_name
-    "entry.776989716": voterToken, // voter_token
-    "entry.1647074345": userAgent, // user_agent
-    "entry.1714317894": nickname, // nickname    
+    "entry.1933223206": categoryId, // category_id
+    "entry.926962263": categoryTitle, // category_title
+    "entry.1554322156": nomineeId, // nominee_id
+    "entry.1302009770": nomineeName, // nominee_name
+    "entry.525305681": voterToken, // voter_token
+    "entry.1323934299": userAgent, // user_agent
+    "entry.985696346": nickname, // nickname    
   });
 
   const maxRetries = 5;
@@ -207,7 +249,7 @@ async function sendVote({
     try {
       // Затримка перед спробою (exponential backoff)
       if (attempt > 0) {
-        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+        const delay = Math.pow(2, attempt) * 2000 + Math.random() * 2000; // збільшив затримку
         console.log(`[sendVote] Waiting ${Math.round(delay)}ms before retry ${attempt + 1}/${maxRetries}`);
         await new Promise(r => setTimeout(r, delay));
       }
@@ -223,9 +265,7 @@ async function sendVote({
       lastStatus = res.status;
 
       if (res.ok) {
-        if (attempt > 0) {
-          console.log(`[sendVote] Success after ${attempt + 1} attempts`);
-        }
+        console.log(`[sendVote] ✓ Vote sent for ${categoryId}`);
         return { ok: true, status: res.status };
       }
 
@@ -522,6 +562,60 @@ const awardsLimiter = rateLimit({
 // ---------- /api/viewers-choice ----------
 
 const awardsMemory = new Set(); // простий анти-дубль у пам'яті сервера
+
+// Завантажуємо існуючі голоси з Google Sheets при старті
+async function loadExistingVotes() {
+  console.log("[loadExistingVotes] Loading existing votes from Google Sheets...");
+  
+  for (const sheetUrl of VOTES_SHEETS) {
+    try {
+      const res = await fetch(sheetUrl, {
+        headers: {
+          "User-Agent": "VamoosClips/1.0",
+          Accept: "text/csv",
+        },
+      });
+
+      if (!res.ok) {
+        console.error(`[loadExistingVotes] Failed to fetch ${sheetUrl}: ${res.status}`);
+        continue;
+      }
+
+      const csvText = await res.text();
+      const { header, rows } = parseCsv(csvText);
+
+      // Знаходимо індекси потрібних колонок
+      const categoryIdx = header.findIndex(h => /category.?id/i.test(h));
+      const voterIdx = header.findIndex(h => /voter.?token/i.test(h));
+
+      if (categoryIdx < 0 || voterIdx < 0) {
+        console.error("[loadExistingVotes] Could not find category_id or voter_token columns");
+        continue;
+      }
+
+      let loadedCount = 0;
+      for (const row of rows) {
+        const categoryId = (row[categoryIdx] || "").trim();
+        const voterToken = (row[voterIdx] || "").trim();
+
+        if (categoryId && voterToken) {
+          const key = `${categoryId}::${voterToken}`;
+          awardsMemory.add(key);
+          loadedCount++;
+        }
+      }
+
+      console.log(`[loadExistingVotes] Loaded ${loadedCount} votes from sheet`);
+    } catch (err) {
+      console.error("[loadExistingVotes] Error:", err.message);
+    }
+  }
+
+  console.log(`[loadExistingVotes] Total unique vote keys in memory: ${awardsMemory.size}`);
+}
+
+// Запускаємо завантаження голосів
+loadExistingVotes();
 
 app.post("/api/viewers-choice", awardsLimiter, async (req, res) => {
   
