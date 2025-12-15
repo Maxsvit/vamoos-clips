@@ -197,31 +197,61 @@ async function sendVote({
     "entry.604386318": nomineeName, // nominee_name
     "entry.776989716": voterToken, // voter_token
     "entry.1647074345": userAgent, // user_agent
-    "entry.1714317894": nickname, // user_agent    
+    "entry.1714317894": nickname, // nickname    
   });
 
-  try {
-    const res = await fetch(FORM_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      },
-      body,
-    });
+  const maxRetries = 5;
+  let lastStatus = 0;
 
-    if (!res.ok) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Затримка перед спробою (exponential backoff)
+      if (attempt > 0) {
+        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+        console.log(`[sendVote] Waiting ${Math.round(delay)}ms before retry ${attempt + 1}/${maxRetries}`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+
+      const res = await fetch(FORM_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body,
+      });
+
+      lastStatus = res.status;
+
+      if (res.ok) {
+        if (attempt > 0) {
+          console.log(`[sendVote] Success after ${attempt + 1} attempts`);
+        }
+        return { ok: true, status: res.status };
+      }
+
+      // Якщо 429 - пробуємо ще раз
+      if (res.status === 429 && attempt < maxRetries - 1) {
+        console.log(`[sendVote] Got 429 (rate limited), will retry (attempt ${attempt + 1}/${maxRetries})`);
+        continue;
+      }
+
       console.error(
         "[sendVote] Google Form returned",
         res.status,
         res.statusText
       );
+      return { ok: false, status: res.status };
+    } catch (err) {
+      console.error("[sendVote] network error", err);
+      if (attempt < maxRetries - 1) {
+        console.log(`[sendVote] Network error, will retry (attempt ${attempt + 1}/${maxRetries})`);
+        continue;
+      }
+      return { ok: false, status: 0 };
     }
-
-    return { ok: res.ok, status: res.status };
-  } catch (err) {
-    console.error("[sendVote] network error", err);
-    return { ok: false, status: 0 };
   }
+
+  return { ok: false, status: lastStatus };
 }
 
 // ==== TWITCH AUTH CONFIG ====
