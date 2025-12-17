@@ -7,6 +7,12 @@ import { fileURLToPath } from "url";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js";
+
+// ========== SUPABASE CONFIG ==========
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://yhluffpvlcnyekjxnxld.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_iI2yfNzZ_rbCC1jOWRosYA_IcG7QFBN";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const app = express();
 
 app.use(
@@ -190,39 +196,9 @@ async function fetchBestThumb(clipUrl) {
   return null;
 }
 
-// ========== ЧЕРГА ГОЛОСІВ (щоб не спамити Google Forms) ==========
-const voteQueue = [];
-let isProcessingQueue = false;
+// ========== SUPABASE ГОЛОСУВАННЯ (замість Google Forms) ==========
 
-async function processVoteQueue() {
-  if (isProcessingQueue) return;
-  isProcessingQueue = true;
-
-  while (voteQueue.length > 0) {
-    const { voteData, resolve } = voteQueue.shift();
-    
-    const result = await sendVoteToGoogle(voteData);
-    resolve(result);
-
-    // Затримка між голосами (1.5-2.5 секунди)
-    if (voteQueue.length > 0) {
-      const delay = 1500 + Math.random() * 1000;
-      await new Promise(r => setTimeout(r, delay));
-    }
-  }
-
-  isProcessingQueue = false;
-}
-
-function sendVote(voteData) {
-  return new Promise((resolve) => {
-    voteQueue.push({ voteData, resolve });
-    console.log(`[voteQueue] Added vote, queue size: ${voteQueue.length}`);
-    processVoteQueue();
-  });
-}
-
-async function sendVoteToGoogle({
+async function sendVote({
   categoryId,
   categoryTitle,
   nomineeId,
@@ -231,67 +207,30 @@ async function sendVoteToGoogle({
   userAgent,
   nickname
 }) {
-  // НОВІ entry ID для нової форми
-  const body = new URLSearchParams({
-    "entry.1933223206": categoryId, // category_id
-    "entry.926962263": categoryTitle, // category_title
-    "entry.1554322156": nomineeId, // nominee_id
-    "entry.1302009770": nomineeName, // nominee_name
-    "entry.525305681": voterToken, // voter_token
-    "entry.1323934299": userAgent, // user_agent
-    "entry.985696346": nickname, // nickname    
-  });
-
-  const maxRetries = 5;
-  let lastStatus = 0;
-
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      // Затримка перед спробою (exponential backoff)
-      if (attempt > 0) {
-        const delay = Math.pow(2, attempt) * 2000 + Math.random() * 2000; // збільшив затримку
-        console.log(`[sendVote] Waiting ${Math.round(delay)}ms before retry ${attempt + 1}/${maxRetries}`);
-        await new Promise(r => setTimeout(r, delay));
-      }
-
-      const res = await fetch(FORM_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-        body,
+  try {
+    const { data, error } = await supabase
+      .from("votes")
+      .insert({
+        category_id: categoryId,
+        category_title: categoryTitle,
+        nominee_id: nomineeId,
+        nominee_name: nomineeName,
+        voter_token: voterToken,
+        user_agent: userAgent,
+        nickname: nickname
       });
 
-      lastStatus = res.status;
-
-      if (res.ok) {
-        console.log(`[sendVote] ✓ Vote sent for ${categoryId}`);
-        return { ok: true, status: res.status };
-      }
-
-      // Якщо 429 - пробуємо ще раз
-      if (res.status === 429 && attempt < maxRetries - 1) {
-        console.log(`[sendVote] Got 429 (rate limited), will retry (attempt ${attempt + 1}/${maxRetries})`);
-        continue;
-      }
-
-      console.error(
-        "[sendVote] Google Form returned",
-        res.status,
-        res.statusText
-      );
-      return { ok: false, status: res.status };
-    } catch (err) {
-      console.error("[sendVote] network error", err);
-      if (attempt < maxRetries - 1) {
-        console.log(`[sendVote] Network error, will retry (attempt ${attempt + 1}/${maxRetries})`);
-        continue;
-      }
-      return { ok: false, status: 0 };
+    if (error) {
+      console.error("[sendVote] Supabase error:", error.message);
+      return { ok: false, status: 500, error: error.message };
     }
-  }
 
-  return { ok: false, status: lastStatus };
+    console.log(`[sendVote] ✓ Vote saved to Supabase: ${categoryId} -> ${nomineeId} (by ${nickname})`);
+    return { ok: true, status: 200 };
+  } catch (err) {
+    console.error("[sendVote] Error:", err.message);
+    return { ok: false, status: 500, error: err.message };
+  }
 }
 
 // ==== TWITCH AUTH CONFIG ====
@@ -565,8 +504,32 @@ const awardsMemory = new Set(); // простий анти-дубль у пам'
 
 // Завантажуємо існуючі голоси з Google Sheets при старті
 async function loadExistingVotes() {
-  console.log("[loadExistingVotes] Loading existing votes from Google Sheets...");
+  console.log("[loadExistingVotes] Loading existing votes...");
   
+  // 1. Завантажуємо з Supabase
+  try {
+    const { data: supabaseVotes, error } = await supabase
+      .from("votes")
+      .select("category_id, voter_token");
+
+    if (error) {
+      console.error("[loadExistingVotes] Supabase error:", error.message);
+    } else if (supabaseVotes) {
+      let count = 0;
+      for (const vote of supabaseVotes) {
+        if (vote.category_id && vote.voter_token) {
+          const key = `${vote.category_id}::${vote.voter_token}`;
+          awardsMemory.add(key);
+          count++;
+        }
+      }
+      console.log(`[loadExistingVotes] Loaded ${count} votes from Supabase`);
+    }
+  } catch (err) {
+    console.error("[loadExistingVotes] Supabase fetch error:", err.message);
+  }
+
+  // 2. Завантажуємо з Google Sheets (стара база)
   for (const sheetUrl of VOTES_SHEETS) {
     try {
       const res = await fetch(sheetUrl, {
@@ -605,9 +568,9 @@ async function loadExistingVotes() {
         }
       }
 
-      console.log(`[loadExistingVotes] Loaded ${loadedCount} votes from sheet`);
+      console.log(`[loadExistingVotes] Loaded ${loadedCount} votes from Google Sheet`);
     } catch (err) {
-      console.error("[loadExistingVotes] Error:", err.message);
+      console.error("[loadExistingVotes] Google Sheet error:", err.message);
     }
   }
 
