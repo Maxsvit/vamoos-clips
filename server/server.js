@@ -15,6 +15,9 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_iI2yfNzZ_rbCC1j
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const app = express();
 
+// Trust proxy для Render (щоб rate limiting працював правильно)
+app.set("trust proxy", true);
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://vamoos-clips.onrender.com"],
