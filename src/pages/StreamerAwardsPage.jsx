@@ -1267,12 +1267,18 @@ export default function StreamerAwardsPage() {
           <h1 className="text-3xl md:text-4xl font-extrabold mb-3">
             Viewers Choice 2025
           </h1>
-          <p className="text-slate-300 max-w-2xl text-center mx-auto">
-          Вибери свого фаворита в кожній категорії, а потім натисни одну кнопку, щоб віддати голос. Один комплект голосів з одного Twitch-акаунту. Після завершення голосування ми зробимо відео з результатами, а всі підсумки покажемо у відкритій таблиці. Стримери, які переможуть, отримають ще й символічні подарунки — але які саме, хай поки залишиться маленьким секретом.
-          </p>
+          {votingClosed ? (
+            <p className="text-slate-300 max-w-2xl text-center mx-auto">
+              Голосування завершено! Дякуємо всім, хто взяв участь. Зараз ми підраховуємо результати та готуємо відео з підсумками. Всі результати будуть опубліковані у відкритій таблиці найближчим часом.
+            </p>
+          ) : (
+            <p className="text-slate-300 max-w-2xl text-center mx-auto">
+              Вибери свого фаворита в кожній категорії, а потім натисни одну кнопку, щоб віддати голос. Один комплект голосів з одного Twitch-акаунту. Після завершення голосування ми зробимо відео з результатами, а всі підсумки покажемо у відкритій таблиці. Стримери, які переможуть, отримають ще й символічні подарунки — але які саме, хай поки залишиться маленьким секретом.
+            </p>
+          )}
 
           {/* таймер */}
-          {timeLeft && (
+          {/* {timeLeft && (
             <div className="mt-4 flex justify-center">
               {timeLeft.ended ? (
                 <div className="inline-flex items-center rounded-full border border-red-500/70 bg-red-500/10 px-4 py-2 text-xs md:text-sm text-red-300">
@@ -1293,113 +1299,117 @@ export default function StreamerAwardsPage() {
                 </div>
               )}
             </div>
+          )} */}
+
+          {!votingClosed && (
+            <div className="mt-5 flex items-center justify-center gap-3 text-sm">
+              {authLoading ? (
+                <span className="text-slate-400">Перевіряємо логін...</span>
+              ) : authUser ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-emerald-400">
+                    Залогінений як{" "}
+                    <strong>{authUser.displayName || authUser.login}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-300 hover:border-red-400 hover:text-red-300"
+                    onClick={async () => {
+                      try {
+                        await fetch("/api/auth/twitch/logout", {
+                          method: "POST",
+                          credentials: "include",
+                        });
+                        setAuthUser(null);
+                      } catch (e) {
+                        console.error("logout error", e);
+                      }
+                    }}
+                  >
+                    Вийти
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="text-slate-400">
+                    Щоб проголосувати, увійди через Twitch.
+                  </span>
+                  <a
+                    href="/api/auth/twitch/login?next=/viewers-choice"
+                    className="rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black"
+                  >
+                    Увійти через Twitch
+                  </a>
+                </>
+              )}
+            </div>
           )}
-
-          <div className="mt-5 flex items-center justify-center gap-3 text-sm">
-            {authLoading ? (
-              <span className="text-slate-400">Перевіряємо логін...</span>
-            ) : authUser ? (
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400">
-                  Залогінений як{" "}
-                  <strong>{authUser.displayName || authUser.login}</strong>
-                </span>
-                <button
-                  type="button"
-                  className="rounded-full border border-slate-600 px-3 py-1 text-xs text-slate-300 hover:border-red-400 hover:text-red-300"
-                  onClick={async () => {
-                    try {
-                      await fetch("/api/auth/twitch/logout", {
-                        method: "POST",
-                        credentials: "include",
-                      });
-                      setAuthUser(null);
-                    } catch (e) {
-                      console.error("logout error", e);
-                    }
-                  }}
-                >
-                  Вийти
-                </button>
-              </div>
-            ) : (
-              <>
-                <span className="text-slate-400">
-                  Щоб проголосувати, увійди через Twitch.
-                </span>
-                <a
-                  href="/api/auth/twitch/login?next=/viewers-choice"
-                  className="rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black"
-                >
-                  Увійти через Twitch
-                </a>
-              </>
-            )}
-          </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="border-b border-slate-800 bg-[#070712]">
-        <div className="mx-auto max-w-6xl px-4 py-8 md:py-10">
-          <h2 className="text-lg font-semibold mb-4">Як це працює?</h2>
-          <div className="grid gap-4 md:grid-cols-3 text-sm text-slate-300">
-            <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
-              <div className="mb-2 text-amber-400 font-semibold">1. Обираєш</div>
-              <p>
-                У кожній категорії натискаєш на стрімера, за якого голосуєш.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
-              <div className="mb-2 text-amber-400 font-semibold">
-                2. Підтверджуєш
-              </div>
-              <p>Коли всі категорії заповнені — тиснеш “Проголосувати”.</p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
-              <div className="mb-2 text-amber-400 font-semibold">
-                3. Чекаєш результати
-              </div>
-              <p>
-                Усі голоси потрапляють у таблицю, а потім ми публікуємо
-                підсумки.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {message && (
-        <div
-          className={`mx-auto mt-6 max-w-6xl px-4 text-sm ${
-            message.type === "success" ? "text-emerald-400" : "text-red-400"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-      <section className="border-t border-slate-800 bg-[#050509]">
-              <div className="mx-auto max-w-6xl px-4 py-8 md:py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                <div className="text-center lg:text-left max-w-xl text-sm text-slate-300">
-                  <h2 className="text-base  font-semibold mb-2">
-                    Підтримати нас
-                  </h2>
-                  <p className="mb-2">
-                    Ми не маємо спонсора і робимо все на ентузіазмі. Але всеодно хочемо допомогти якось зсу, тому все що надійде на цю банку, то відправимо на якийсь збір стрімерів і гроші підуть в добру справу.
+      {!votingClosed && (
+        <>
+          {/* HOW IT WORKS */}
+          <section className="border-b border-slate-800 bg-[#070712]">
+            <div className="mx-auto max-w-6xl px-4 py-8 md:py-10">
+              <h2 className="text-lg font-semibold mb-4">Як це працює?</h2>
+              <div className="grid gap-4 md:grid-cols-3 text-sm text-slate-300">
+                <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
+                  <div className="mb-2 text-amber-400 font-semibold">1. Обираєш</div>
+                  <p>
+                    У кожній категорії натискаєш на стрімера, за якого голосуєш.
                   </p>
                 </div>
-                <div className="mx-auto lg:mx-0 w-40 h-40 md:w-48 md:h-48 rounded-2xl border bg-black/60 flex items-center justify-center overflow-hidden">
-                  {/* Замінити на реальний QR-код Монобанки */}
-                  <img
-                    src={code}
-                    alt="QR-код Монобанки для підтримки каналу"
-                    className="w-full h-full object-contain"
-                  />
+                <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
+                  <div className="mb-2 text-amber-400 font-semibold">
+                    2. Підтверджуєш
+                  </div>
+                  <p>Коли всі категорії заповнені — тиснеш "Проголосувати".</p>
+                </div>
+                <div className="rounded-2xl border border-slate-800 bg-black/40 p-4">
+                  <div className="mb-2 text-amber-400 font-semibold">
+                    3. Чекаєш результати
+                  </div>
+                  <p>
+                    Усі голоси потрапляють у таблицю, а потім ми публікуємо
+                    підсумки.
+                  </p>
                 </div>
               </div>
-        </section>
-      {/* CATEGORIES */}
-      <section className="mx-auto max-w-6xl px-4 py-10 space-y-8">
+            </div>
+          </section>
+
+          {message && (
+            <div
+              className={`mx-auto mt-6 max-w-6xl px-4 text-sm ${
+                message.type === "success" ? "text-emerald-400" : "text-red-400"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+          <section className="border-t border-slate-800 bg-[#050509]">
+            <div className="mx-auto max-w-6xl px-4 py-8 md:py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="text-center lg:text-left max-w-xl text-sm text-slate-300">
+                <h2 className="text-base  font-semibold mb-2">
+                  Підтримати нас
+                </h2>
+                <p className="mb-2">
+                  Ми не маємо спонсора і робимо все на ентузіазмі. Але всеодно хочемо допомогти якось зсу, тому все що надійде на цю банку, то відправимо на якийсь збір стрімерів і гроші підуть в добру справу.
+                </p>
+              </div>
+              <div className="mx-auto lg:mx-0 w-40 h-40 md:w-48 md:h-48 rounded-2xl border bg-black/60 flex items-center justify-center overflow-hidden">
+                {/* Замінити на реальний QR-код Монобанки */}
+                <img
+                  src={code}
+                  alt="QR-код Монобанки для підтримки каналу"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          </section>
+          {/* CATEGORIES */}
+          <section className="mx-auto max-w-6xl px-4 py-10 space-y-8">
         {randomCategories.map((cat) => {
           const SEARCHABLE_CATEGORY_IDS = [
             "streamer_of_the_year",
@@ -1501,28 +1511,89 @@ export default function StreamerAwardsPage() {
           );
         })}
 
-        {/* кнопка під формою */}
-        <div className="mt-8 flex flex-col gap-2 border-t border-slate-800 pt-6">
-          <button
-            type="button"
-            className="self-start rounded-full bg-amber-400 px-7 py-2.5 text-sm font-semibold text-black disabled:opacity-60"
-            disabled={!allSelected || submitting || votingClosed}
-            onClick={handleSubmitAll}
-          >
-            {votingClosed
-              ? "Голосування завершено"
-              : submitting
-              ? "Відправляємо голоси..."
-              : "Проголосувати за всі категорії"}
-          </button>
-          <span className="text-xs text-slate-400">
-            Щоб кнопка стала активною, потрібно обрати стрімера в кожній
-            категорії.
-          </span>
-        </div>
-      </section>
+            {/* кнопка під формою */}
+            <div className="mt-8 flex flex-col gap-2 border-t border-slate-800 pt-6">
+              <button
+                type="button"
+                className="self-start rounded-full bg-amber-400 px-7 py-2.5 text-sm font-semibold text-black disabled:opacity-60"
+                disabled={!allSelected || submitting || votingClosed}
+                onClick={handleSubmitAll}
+              >
+                {votingClosed
+                  ? "Голосування завершено"
+                  : submitting
+                  ? "Відправляємо голоси..."
+                  : "Проголосувати за всі категорії"}
+              </button>
+              <span className="text-xs text-slate-400">
+                Щоб кнопка стала активною, потрібно обрати стрімера в кожній
+                категорії.
+              </span>
+            </div>
+          </section>
+        </>
+      )}
 
-      {/* FAQ під формою */}
+      {/* Секція про закінчення голосування */}
+      {votingClosed && (
+        <section className="mx-auto max-w-6xl px-4 py-16">
+          <div className="rounded-3xl border border-amber-400/30 bg-amber-400/5 p-8 md:p-12 text-center">
+            <div className="text-6xl md:text-7xl mb-6">🎉</div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-amber-400">
+              Голосування завершено!
+            </h2>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-6">
+              Дякуємо всім, хто взяв участь у Viewers Choice 2025! Ваші голоси зібрані та ми вже підраховуємо результати.
+            </p>
+            <div className="rounded-2xl border border-slate-800 bg-black/40 p-6 max-w-xl mx-auto text-left">
+              <h3 className="font-semibold mb-3 text-slate-100">Що далі?</h3>
+              <ul className="space-y-2 text-sm text-slate-300">
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-1">•</span>
+                  <span>Ми вже підраховуємо всі голоси з усіх категорій</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-1">•</span>
+                  <span>Відео з результатами та переможцями вийде <strong className="text-amber-400">11.01.2026</strong></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-1">•</span>
+                  <span>Опублікуємо всі підсумки у відкритій таблиці</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 mt-1">•</span>
+                  <span>Переможці отримають символічні подарунки</span>
+                </li>
+              </ul>
+            </div>
+            <div className="mt-8">
+              <p className="text-sm text-slate-400 mb-4">
+                Слідкуйте за більшими новинами в наших каналах!
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href="https://www.youtube.com/@vamoosnarizky"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 md:text-lg rounded-2xl text-base text-white font-bold bg-gradient-to-br from-red-500 to-fuchsia-500 hover:from-red-400 hover:to-fuchsia-400 border border-white/10 shadow-[0_4px_20px_rgba(139,92,246,.25)] transition-all duration-200 hover:shadow-[0_6px_26px_rgba(139,92,246,.35)] hover:translate-y-[-1px]"
+                >
+                  Перейти на YouTube 🚀
+                </a>
+                <a
+                  href="https://t.me/vamooschannel"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 md:text-lg rounded-2xl text-base text-white font-bold bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 border border-white/10 shadow-[0_4px_20px_rgba(59,130,246,.25)] transition-all duration-200 hover:shadow-[0_6px_26px_rgba(59,130,246,.35)] hover:translate-y-[-1px]"
+                >
+                  Перейти в Telegram 📱
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ///* FAQ під формою
       <section className="border-t border-slate-800 bg-[#050509]">
         <div className="mx-auto max-w-6xl px-4 py-10 md:py-12">
           <h2 className="text-lg font-semibold mb-4">FAQ — часті питання</h2>
@@ -1568,9 +1639,9 @@ export default function StreamerAwardsPage() {
             </div>
           </div>
         </div>
-      </section>  
+      </section>   */} 
 
-      {popup && (
+      {/* {popup && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-md rounded-2xl bg-[#050509] border border-slate-700 p-5 shadow-xl">
             <h2 className="text-lg font-semibold mb-2">{popup.title}</h2>
@@ -1584,9 +1655,9 @@ export default function StreamerAwardsPage() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
         {/* YouTube секція */}
-        <YouTubeSection />
+        {/* <YouTubeSection /> */}
         <Footer />
     </main>
   );
