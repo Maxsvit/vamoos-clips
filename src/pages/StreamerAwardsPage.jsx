@@ -1549,19 +1549,19 @@ export default function StreamerAwardsPage() {
               <h3 className="font-semibold mb-3 text-slate-100">Що далі?</h3>
               <ul className="space-y-2 text-sm text-slate-300">
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-400 mt-1">•</span>
+                  <span className="text-amber-400">•</span>
                   <span>Ми вже підраховуємо всі голоси з усіх категорій</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-400 mt-1">•</span>
+                  <span className="text-amber-400 ">•</span>
                   <span>Відео з результатами та переможцями вийде <strong className="text-amber-400">11.01.2026</strong></span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-400 mt-1">•</span>
+                  <span className="text-amber-400 ">•</span>
                   <span>Опублікуємо всі підсумки у відкритій таблиці</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-amber-400 mt-1">•</span>
+                  <span className="text-amber-400">•</span>
                   <span>Переможці отримають символічні подарунки</span>
                 </li>
               </ul>
