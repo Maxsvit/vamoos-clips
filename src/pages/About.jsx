@@ -36,6 +36,28 @@ export default function About() {
       desc: "Монтує кліпи, допомагає з редагуванням та активно стрімить на Twitch.",
       image: nasty,
     },
+    {
+      name: "Сашко",
+      role: "Монтажер, графік, стрімер",
+      desc: "Всі превю зроблені Сашком і все що ви бачите 3D то це він зробив.",
+      image: sashko,
+      link: "https://www.twitch.tv/dvisosiski",
+      artstationlink: "https://www.artstation.com/sshtskk"
+    },
+    {
+      name: "Максим Потяг",
+      role: "Шукач гарного контенту і реклами",
+      desc: "Шукає і відбирає кліпи і допомогає з вирішенням питань з рекламою.",
+      image: train,
+      link: "",
+    },
+    {
+      name: "Culfich",
+      role: "Монтажер, стрімер",
+      desc: "Монтує шортcи і тіктоки для нашого каналу та й інколи підрубає стріми",
+      image: taras,
+      link: "https://www.twitch.tv/culfich",
+    },
   ];
 
   return (
