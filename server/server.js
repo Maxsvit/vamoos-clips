@@ -7,9 +7,27 @@ import csv from "csv-parser";
 import rateLimit from "express-rate-limit";
 
 const app = express();
+
+const NEW_SITE_ORIGIN = "https://vamoosnarizky.com";
+const LEGACY_HOSTS = new Set(["vamoos-clips.onrender.com"]);
+
+app.use((req, res, next) => {
+  const host = (req.get("host") || "").split(":")[0].toLowerCase();
+  if (LEGACY_HOSTS.has(host)) {
+    const path = req.originalUrl || "/";
+    return res.redirect(301, `${NEW_SITE_ORIGIN}${path}`);
+  }
+  next();
+});
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://vamoos-clips.onrender.com"],
+    origin: [
+      "http://localhost:5173",
+      "https://vamoos-clips.onrender.com",
+      NEW_SITE_ORIGIN,
+      "https://www.vamoosnarizky.com",
+    ],
   })
 );
 
