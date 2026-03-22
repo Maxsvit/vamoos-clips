@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import fallbackLogo from "../assets/img/logo.jpg";
 
 function getClipSlug(twitchUrl) {
   try {
     const u = new URL(twitchUrl);
-    if (u.hostname.includes("clips.twitch.tv")) return u.pathname.slice(1);
+    if (u.hostname.includes("clips.twitch.tv")) {
+      const seg = u.pathname.split("/").filter(Boolean)[0];
+      return seg || null;
+    }
     const p = u.pathname.split("/").filter(Boolean);
     const i = p.findIndex((x) => x.toLowerCase() === "clip");
     if (i >= 0 && p[i + 1]) return p[i + 1];
@@ -23,109 +26,108 @@ function isHttp(s) {
   }
 }
 
+function sameAssetUrl(a, b) {
+  if (!a || !b) return false;
+  try {
+    const ua = new URL(
+      a,
+      typeof window !== "undefined" ? window.location.origin : "http://local"
+    );
+    const ub = new URL(
+      b,
+      typeof window !== "undefined" ? window.location.origin : "http://local"
+    );
+    return ua.pathname + ua.search === ub.pathname + ub.search;
+  } catch {
+    return a === b;
+  }
+}
+
 export default function ClipCard({ clip }) {
   const realUrl = (clip?.url ?? clip?.clipUrl ?? "").toString().trim();
-  const [thumb, setThumb] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const slug = getClipSlug(realUrl);
+  const thumbFromApi = (clip?.thumbProxy ?? "").toString().trim();
+  const thumbUrl =
+    thumbFromApi ||
+    (slug ? `/api/clip-thumb?slug=${encodeURIComponent(slug)}` : "");
+
+  const [src, setSrc] = useState(thumbUrl || fallbackLogo);
   const [failed, setFailed] = useState(false);
+  const srcRef = useRef(null);
+  srcRef.current = src;
 
   useEffect(() => {
-    if (!realUrl || !isHttp(realUrl)) {
-      setFailed(true);
-      setThumb(fallbackLogo);
-      setLoading(false);
-      return;
-    }
+    setFailed(false);
+    setSrc(thumbUrl || fallbackLogo);
+  }, [thumbUrl, realUrl]);
 
-    let abort = false;
-
-    (async () => {
-      setLoading(true);
-      setFailed(false);
-      console.debug("[ClipCard] start:", realUrl);
-
-      const slug = getClipSlug(realUrl);
-      if (slug && !abort) {
-        setThumb(`/api/clip-thumb?slug=${encodeURIComponent(slug)}`);
-      } else {
-        setThumb(fallbackLogo);
-      }
-
-      try {
-        const res = await fetch(
-          `/api/clip-preview?url=${encodeURIComponent(realUrl)}`
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          console.debug("[clip-preview]", data);
-
-          if (data.thumbnail_url) {
-            const viaProxy = `/api/img?url=${encodeURIComponent(
-              data.thumbnail_url
-            )}`;
-            if (!abort) setThumb(viaProxy);
-          } else {
-            if (!abort) setThumb(fallbackLogo);
-          }
-        } else {
-          console.warn("[clip-preview] HTTP", res.status, realUrl);
-          if (!abort) setThumb(fallbackLogo);
-        }
-      } catch (e) {
-        console.warn("[clip-preview] error", e);
-        if (!abort) setThumb(fallbackLogo);
-      } finally {
-        if (!abort) setLoading(false);
-      }
-    })();
-
-    return () => {
-      abort = true;
-    };
-  }, [realUrl]);
+  if (!realUrl || !isHttp(realUrl)) {
+    return (
+      <a
+        href={realUrl || "#"}
+        className="group block rounded-2xl overflow-hidden bg-[#100818] ring-1 ring-white/[0.07] opacity-80"
+      >
+        <div className="relative aspect-video overflow-hidden bg-black/40 flex items-center justify-center">
+          <img
+            src={fallbackLogo}
+            alt=""
+            className="w-full h-full object-cover opacity-50"
+          />
+        </div>
+        <div className="p-4 border-t border-white/[0.06]">
+          <h3 className="text-white font-semibold line-clamp-2">{clip.title}</h3>
+          <p className="text-sm text-gray-400 mt-1.5">Автор: {clip.author}</p>
+        </div>
+      </a>
+    );
+  }
 
   return (
     <a
       href={realUrl}
       target="_blank"
       rel="noreferrer"
-      className="group block rounded-xl overflow-hidden bg-[#121016] ring-1 ring-white/5 shadow-lg hover:ring-purple-500/50 transition transform hover:-translate-y-1"
+      className="group block rounded-2xl overflow-hidden bg-[#100818] ring-1 ring-white/[0.07] shadow-[0_12px_40px_rgba(0,0,0,0.35)] hover:ring-violet-500/40 hover:shadow-[0_16px_48px_rgba(88,28,135,0.2)] transition-all duration-300 hover:-translate-y-0.5"
     >
-      <div className="relative aspect-video overflow-hidden">
-        {loading && (
-          <div className="absolute inset-0 animate-pulse bg-white/5" />
-        )}
-
-        {thumb && !failed && (
+      <div className="relative aspect-video overflow-hidden bg-black/30">
+        {!failed && src ? (
           <img
-            src={thumb}
+            key={src}
+            src={src}
             alt={clip.title}
-            className="w-full h-full object-cover transition group-hover:scale-105"
+            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
             referrerPolicy="no-referrer"
-            onError={() => {
-              if (thumb.includes("/api/img")) {
-                const slug = getClipSlug(realUrl);
-                if (slug) {
-                  setThumb(`/api/clip-thumb?slug=${encodeURIComponent(slug)}`);
-                  return;
-                }
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              const current = srcRef.current;
+              if (
+                current &&
+                !sameAssetUrl(e.currentTarget.src, current)
+              ) {
+                return;
+              }
+              if (current && current !== fallbackLogo) {
+                setSrc(fallbackLogo);
+                return;
               }
               setFailed(true);
             }}
           />
-        )}
+        ) : null}
 
-        {failed && !loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-gray-300 text-sm">
+        {failed ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-gray-300 text-sm px-2 text-center">
             Не вдалося завантажити прев’ю
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="p-4">
-        <h3 className="text-white font-semibold line-clamp-2">{clip.title}</h3>
-        <p className="text-sm text-gray-400 mt-1">Автор: {clip.author}</p>
+      <div className="p-4 border-t border-white/[0.06]">
+        <h3 className="text-white font-semibold line-clamp-2 leading-snug">
+          {clip.title}
+        </h3>
+        <p className="text-sm text-gray-400 mt-1.5">Автор: {clip.author}</p>
       </div>
     </a>
   );

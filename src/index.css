@@ -35,3 +35,244 @@ html,
 body {
   font-family: "Inter", sans-serif;
 }
+
+/* Hero: фон поза текстом — повільні «aurora» плями */
+@keyframes hero-blob-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(8%, -6%) scale(1.12);
+  }
+  70% {
+    transform: translate(-6%, 5%) scale(0.94);
+  }
+}
+
+@keyframes hero-blob-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-10%, 8%) scale(1.08);
+  }
+}
+
+@keyframes hero-blob-c {
+  0%,
+  100% {
+    transform: translateX(-50%) translate(0, 0) scale(1);
+  }
+  35% {
+    transform: translateX(-50%) translate(28px, 36px) scale(1.06);
+  }
+  65% {
+    transform: translateX(-50%) translate(-22px, -16px) scale(0.98);
+  }
+}
+
+.hero-backdrop {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-aurora {
+  position: absolute;
+  inset: -12% -40% -5%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-aurora__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+.hero-aurora__blob--a {
+  width: min(480px, 85vw);
+  height: min(420px, 45vh);
+  left: 5%;
+  top: -5%;
+  background: radial-gradient(
+    circle at 40% 40%,
+    rgba(167, 139, 250, 0.9) 0%,
+    rgba(139, 92, 246, 0.35) 45%,
+    transparent 68%
+  );
+  animation: hero-blob-a 22s ease-in-out infinite;
+}
+
+.hero-aurora__blob--b {
+  width: min(400px, 75vw);
+  height: min(360px, 40vh);
+  right: 0;
+  top: 15%;
+  background: radial-gradient(
+    circle at 60% 50%,
+    rgba(232, 121, 249, 0.75) 0%,
+    rgba(192, 38, 211, 0.25) 50%,
+    transparent 70%
+  );
+  animation: hero-blob-b 26s ease-in-out infinite;
+  animation-delay: -4s;
+  opacity: 0.35;
+}
+
+.hero-aurora__blob--c {
+  width: min(520px, 95vw);
+  height: min(280px, 35vh);
+  left: 50%;
+  top: 35%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(99, 102, 241, 0.55) 0%,
+    rgba(79, 70, 229, 0.2) 55%,
+    transparent 72%
+  );
+  animation: hero-blob-c 19s ease-in-out infinite;
+  animation-delay: -8s;
+  opacity: 0.32;
+}
+
+.hero-backdrop__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 85% 70% at 50% 42%,
+    transparent 0%,
+    transparent 35%,
+    rgba(10, 0, 20, 0.55) 100%
+  );
+}
+
+.hero-backdrop__content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Зовнішня анімована рамка тільки навколо блоку лічильника */
+@keyframes hero-stat-chassis-orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes hero-stat-chassis-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 22px rgba(139, 92, 246, 0.18),
+      0 0 48px rgba(192, 132, 252, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 32px rgba(167, 139, 250, 0.28),
+      0 0 64px rgba(232, 121, 249, 0.14);
+  }
+}
+
+.hero-stat-chassis {
+  position: relative;
+}
+
+.hero-stat-chassis__shell {
+  position: relative;
+  border-radius: 1.875rem;
+  padding: 2px;
+  overflow: hidden;
+  animation: hero-stat-chassis-glow 6s ease-in-out infinite;
+}
+
+.hero-stat-chassis__spin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(139, 92, 246, 0) 0deg,
+    rgba(139, 92, 246, 0.15) 50deg,
+    rgba(232, 121, 249, 0.55) 110deg,
+    rgba(167, 139, 250, 0.35) 170deg,
+    rgba(99, 102, 241, 0.2) 230deg,
+    rgba(139, 92, 246, 0) 300deg,
+    rgba(139, 92, 246, 0) 360deg
+  );
+  animation: hero-stat-chassis-orbit 16s linear infinite;
+  pointer-events: none;
+}
+
+.hero-stat-chassis__inner {
+  position: relative;
+  z-index: 1;
+  border-radius: calc(1.875rem - 2px);
+  background-color: #0a0014;
+}
+
+@keyframes hero-title-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-stat-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-title-anim {
+  animation: hero-title-in 0.75s ease-out both;
+}
+
+.hero-stat-anim {
+  animation: hero-stat-in 0.85s ease-out 0.12s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-anim,
+  .hero-stat-anim {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-aurora__blob--a,
+  .hero-aurora__blob--b,
+  .hero-aurora__blob--c {
+    animation: none;
+  }
+
+  .hero-stat-chassis__shell {
+    animation: none;
+    box-shadow: 0 0 18px rgba(139, 92, 246, 0.12);
+  }
+
+  .hero-stat-chassis__spin {
+    animation: none;
+    opacity: 0.42;
+    transform: translate(-50%, -50%) rotate(22deg);
+  }
+}
