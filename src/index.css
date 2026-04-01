@@ -251,7 +251,58 @@ body {
   animation: hero-stat-in 0.85s ease-out 0.12s both;
 }
 
+/* Clip of the month — статус під правилами */
+@keyframes clip-month-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25),
+      0 8px 40px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.45),
+      0 12px 48px rgba(245, 158, 11, 0.12);
+  }
+}
+
+@keyframes clip-month-dots {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.clip-month-status--pulse {
+  animation: clip-month-glow 2.4s ease-in-out infinite;
+}
+
+.clip-month-status__dot {
+  animation: clip-month-dots 1.2s ease-in-out infinite;
+}
+
+.clip-month-status__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.clip-month-status__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .clip-month-status--pulse {
+    animation: none;
+  }
+
+  .clip-month-status__dot {
+    animation: none;
+    opacity: 0.9;
+    transform: none;
+  }
+
   .hero-title-anim,
   .hero-stat-anim {
     animation: none;

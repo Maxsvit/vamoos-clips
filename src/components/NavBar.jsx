@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/logo.jpg";
+import { useAuth } from "../context/AuthContext";
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, loading, logout } = useAuth();
 
   const linkBtn =
     "px-5 py-2 rounded-2xl text-[15px] text-white font-bold " +
@@ -11,6 +13,13 @@ function NavBar() {
     "hover:from-violet-400 hover:to-fuchsia-400 " +
     "border border-white/10 shadow-[0_4px_20px_rgba(139,92,246,.25)] " +
     "transition-all duration-200 hover:shadow-[0_6px_26px_rgba(139,92,246,.35)] hover:translate-y-[-1px]";
+
+  const linkBtnClipMonth =
+    "px-5 py-2 rounded-2xl text-[15px] text-white font-bold " +
+    "bg-gradient-to-br from-emerald-500 to-teal-600 " +
+    "hover:from-emerald-400 hover:to-teal-500 " +
+    "border border-emerald-300/30 shadow-[0_4px_20px_rgba(16,185,129,.35)] " +
+    "transition-all duration-200 hover:shadow-[0_6px_26px_rgba(16,185,129,.45)] hover:translate-y-[-1px]";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0c0224] shadow-[0_0_15px_rgba(139,92,246,0.4)]">
@@ -36,6 +45,10 @@ function NavBar() {
              bg-[#0c0224]/95 md:bg-transparent backdrop-blur md:backdrop-blur-0
              p-3 md:p-0 rounded-2xl`}
         >
+          <NavLink to="/clip-of-month" className={linkBtnClipMonth}>
+            Кліп місяця 🏆
+          </NavLink>
+
           <NavLink to="/submit" className={linkBtn}>
             Додати кліп 🚀
           </NavLink>
@@ -52,6 +65,26 @@ function NavBar() {
           <NavLink to="/about" className={linkBtn}>
             Про нас 👥
           </NavLink>
+
+          {!loading && user && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <img
+                src={user.profileImageUrl}
+                alt=""
+                className="w-9 h-9 rounded-full ring-2 ring-[#9146FF]/50"
+              />
+              <span className="text-white text-sm font-medium max-w-[120px] truncate hidden sm:inline">
+                {user.displayName}
+              </span>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="text-sm text-gray-400 hover:text-white underline underline-offset-2"
+              >
+                Вийти
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

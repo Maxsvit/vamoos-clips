@@ -1,0 +1,10 @@
+{
+  "enabled": false,
+  "clips": [
+    {
+      "clipUrl": "https://clips.twitch.tv/ExampleSlug-xxxxxxxxxxxx",
+      "title": "опційно — назва для картки",
+      "author": "опційно — стрімер"
+    }
+  ]
+}

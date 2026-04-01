@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { apiUrl } from "../lib/apiOrigin";
 
 export default function SubmitClip() {
   const [clipUrl, setClipUrl] = useState("");
@@ -35,7 +36,7 @@ export default function SubmitClip() {
     }
 
     try {
-      const res = await fetch("/api/submit", {
+      const res = await fetch(apiUrl("/api/submit"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -160,13 +161,14 @@ export default function SubmitClip() {
 
           <div>
             <label className="block text-sm text-gray-300 mb-1">
-              Ваш нік / коментар
+              Ваш нік / коментар + для конкурсу, як можна з вами зв'язатися, ваш телеграм
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="w-full p-3 rounded-lg bg-[#121016] ring-1 ring-white/10 outline-none"
+              placeholder="Ваш телеграм: @your_telegram_username"
             />
           </div>
 

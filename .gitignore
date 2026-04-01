@@ -25,3 +25,9 @@ dist-ssr
 node_modules/
 dist/
 
+# Локальні голоси «Кліп місяця» (не комітити прод-дані)
+server/clip-month-votes.json
+# Ручний список кліпів на фазу голосування — копія з clip-month-pool.example.json
+server/clip-month-pool.json
+
+.env

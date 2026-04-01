@@ -1,9 +1,14 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import crypto from "crypto";
 import fetch from "node-fetch";
+import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import rateLimit from "express-rate-limit";
+import session from "express-session";
+import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 
@@ -19,16 +24,26 @@ app.use((req, res, next) => {
   next();
 });
 
+const CORS_EXTRA = (process.env.CORS_EXTRA_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:5000",
       "https://vamoos-clips.onrender.com",
       NEW_SITE_ORIGIN,
       "https://www.vamoosnarizky.com",
+      ...CORS_EXTRA,
     ],
+    credentials: true,
   })
 );
+
+app.set("trust proxy", 1);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +54,25 @@ const clipsCache = { ts: 0, data: null };
 const thumbCache = new Map();
 const THUMB_CACHE_TTL = 60 * 60 * 1000;
 app.use(express.json());
+
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || "dev-session-secret-change-in-production";
+
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    name: "vamoos.sid",
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
+  })
+);
+
 const FORM_ACTION =
   "https://docs.google.com/forms/d/e/1FAIpQLSc9b146kmNEsIPc1ZUp7k8WBgWmISwrc46UlXLkP600OwxyeA/formResponse";
 const SHEETS_CSV =
@@ -123,12 +157,27 @@ function getClipSlugFromUrl(raw) {
   return null;
 }
 
+/** Нормалізує URL кліпу до вигляду clips.twitch.tv/Slug (як у формі додавання кліпів). */
+function normalizeClipUrl(raw) {
+  try {
+    if (!isValidHttpUrl(raw)) return null;
+    const u = new URL(raw);
+    const p = u.pathname.split("/").filter(Boolean);
+    const i = p.findIndex((x) => x.toLowerCase() === "clip");
+    if (i >= 0 && p[i + 1]) return `https://clips.twitch.tv/${p[i + 1]}`;
+    if (u.hostname.includes("clips.twitch.tv")) return raw;
+  } catch {
+    /* invalid URL */
+  }
+  return null;
+}
+
 const clipThumbBlobCache = new Map();
 const CLIP_THUMB_TTL = 60 * 60 * 1000;
 const clipThumbInflight = new Map();
 
 const TWITCH_GQL = "https://gql.twitch.tv/gql";
-const TWITCH_CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+const TWITCH_PUBLIC_CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
 
 const thumbUrlCache = new Map();
 
@@ -145,7 +194,7 @@ async function batchResolveThumbUrls(slugs) {
       const r = await fetch(TWITCH_GQL, {
         method: "POST",
         headers: {
-          "Client-ID": TWITCH_CLIENT_ID,
+          "Client-ID": TWITCH_PUBLIC_CLIENT_ID,
           "Content-Type": "application/json",
         },
         body,
@@ -171,9 +220,190 @@ async function batchResolveThumbUrls(slugs) {
   return result;
 }
 
+function parseSheetClipDate(str) {
+  if (!str) return 0;
+  const m = str.match(
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+  );
+  if (m) {
+    const [, d, mo, y, h, mi, s] = m;
+    return new Date(y, mo - 1, d, h, mi, s || 0).getTime();
+  }
+  return Date.parse(str) || 0;
+}
+
+/** Свіжіші кліпи з таблиці (кеш як у /api/clips). */
+async function loadSortedClipsFromSheets(force) {
+  const now = Date.now();
+  if (!force && clipsCache.data && now - clipsCache.ts < 10_000) {
+    return clipsCache.data;
+  }
+
+  const csvUrl = `${SHEETS_CSV}${
+    SHEETS_CSV.includes("?") ? "&" : "?"
+  }_ts=${now}`;
+
+  const r = await fetch(csvUrl, {
+    headers: {
+      "User-Agent": "VamoosClips/1.0",
+      Accept: "text/csv",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+  });
+
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(`${r.status}: ${t.slice(0, 200)}`);
+  }
+
+  const csvText = await r.text();
+  const { header, rows } = parseCsv(csvText);
+
+  const idx = {
+    ts: header.findIndex((h) => /позначка часу|timestamp/i.test(h)),
+    url: header.findIndex((h) => /clip\s*url|url\s*кліпу|посилання/i.test(h)),
+    title: header.findIndex((h) => /назва|title/i.test(h)),
+    author: header.findIndex((h) => /автор|стрімер|author|streamer/i.test(h)),
+    note: header.findIndex((h) => /нік|коментар|note|comment/i.test(h)),
+  };
+
+  if (idx.url < 0) {
+    console.error("[clips] URL column not found. Header =", header);
+    clipsCache.data = [];
+    clipsCache.ts = now;
+    return [];
+  }
+
+  let clips = rows
+    .map((cols) => {
+      const clipUrl = (cols[idx.url] ?? "").trim();
+      if (!clipUrl) return null;
+      const slug = getClipSlugFromUrl(clipUrl);
+      const thumbProxy = slug
+        ? `/api/clip-thumb?slug=${encodeURIComponent(slug)}`
+        : null;
+      return {
+        clipUrl,
+        thumbProxy,
+        title: (idx.title >= 0 ? (cols[idx.title] ?? "").trim() : "") || "Без назви",
+        author:
+          (idx.author >= 0 ? (cols[idx.author] ?? "").trim() : "") ||
+          "Невідомо",
+        note: idx.note >= 0 ? (cols[idx.note] ?? "").trim() : "",
+        createdAt: idx.ts >= 0 ? cols[idx.ts] ?? null : null,
+      };
+    })
+    .filter(Boolean);
+
+  const seen = new Set();
+  clips = clips.filter((c) =>
+    seen.has(c.clipUrl) ? false : (seen.add(c.clipUrl), true)
+  );
+
+  clips.sort((a, b) => parseSheetClipDate(b.createdAt) - parseSheetClipDate(a.createdAt));
+
+  clipsCache.data = clips;
+  clipsCache.ts = now;
+
+  return clips;
+}
+
+async function enrichClipsSliceWithThumbs(slice) {
+  const slugs = slice.map((c) => getClipSlugFromUrl(c.clipUrl)).filter(Boolean);
+  let thumbMap = {};
+  try {
+    thumbMap = await batchResolveThumbUrls(slugs);
+  } catch {
+    /* non-critical */
+  }
+  return slice.map((c) => {
+    const slug = getClipSlugFromUrl(c.clipUrl);
+    const directUrl = slug ? thumbMap[slug] : null;
+    return {
+      ...c,
+      thumbProxy: directUrl
+        ? `/api/img?url=${encodeURIComponent(directUrl)}`
+        : c.thumbProxy,
+    };
+  });
+}
+
+/** Шлях до JSON з ручним списком кліпів для «Кліп місяця» (див. clip-month-pool.example.json). */
+const CLIP_MONTH_POOL_PATH = path.join(
+  __dirname,
+  (process.env.CLIP_MONTH_POOL_FILE || "clip-month-pool.json").trim()
+);
+
+function clipMonthManualRow(entry) {
+  const raw = entry?.clipUrl ?? entry?.url ?? entry?.clip;
+  if (raw == null) return null;
+  let u = String(raw).trim();
+  if (!u) return null;
+  const norm = normalizeClipUrl(u);
+  if (norm) u = norm;
+  if (!isValidHttpUrl(u)) return null;
+  const slug = getClipSlugFromUrl(u);
+  const thumbProxy = slug
+    ? `/api/clip-thumb?slug=${encodeURIComponent(slug)}`
+    : null;
+  const title = String(entry?.title ?? "").trim() || "Без назви";
+  const author = String(entry?.author ?? "").trim() || "Невідомо";
+  return {
+    clipUrl: u,
+    thumbProxy,
+    title,
+    author,
+    note: "",
+    createdAt: null,
+  };
+}
+
+/** Якщо clip-month-pool.json існує і enabled: true — повертає масив кліпів; інакше null (тоді беремо Google Sheets). */
+async function readClipMonthManualPoolOrNull() {
+  try {
+    const raw = await fs.readFile(CLIP_MONTH_POOL_PATH, "utf8");
+    const j = JSON.parse(raw);
+    if (!j || j.enabled !== true) return null;
+    let rawItems = [];
+    if (Array.isArray(j.clips)) rawItems = j.clips;
+    else if (Array.isArray(j.urls))
+      rawItems = j.urls.map((u) =>
+        typeof u === "string" ? { clipUrl: u } : u
+      );
+    const out = [];
+    const seen = new Set();
+    for (const it of rawItems) {
+      const row = clipMonthManualRow(it);
+      if (!row) continue;
+      if (seen.has(row.clipUrl)) continue;
+      seen.add(row.clipUrl);
+      out.push(row);
+    }
+    if (out.length === 0) {
+      console.warn(
+        "[clip-month-pool] enabled=true, але немає валідних посилань — використовуємо таблицю Google"
+      );
+      return null;
+    }
+    console.log("[clip-month-pool] ручний пул:", out.length, "кліпів");
+    return out;
+  } catch (e) {
+    if (e.code === "ENOENT") return null;
+    console.error("[clip-month-pool]", e.message);
+    return null;
+  }
+}
+
+async function loadClipsForClipMonth() {
+  const manual = await readClipMonthManualPoolOrNull();
+  if (manual) return { clips: manual, source: "manual" };
+  const clips = await loadSortedClipsFromSheets(false);
+  return { clips, source: "sheets" };
+}
+
 app.get("/api/clips", async (req, res) => {
   try {
-    const now = Date.now();
     const force = String(req.query.force || "") === "1";
     const page = Math.max(1, parseInt(String(req.query.page ?? "1"), 10) || 1);
     const pageSize = Math.min(
@@ -181,125 +411,29 @@ app.get("/api/clips", async (req, res) => {
       Math.max(1, parseInt(String(req.query.limit ?? "9"), 10) || 9)
     );
 
-    const jsonPage = async (clips) => {
-      const start = (page - 1) * pageSize;
-      const slice = clips.slice(start, start + pageSize);
-
-      const slugs = slice.map((c) => getClipSlugFromUrl(c.clipUrl)).filter(Boolean);
-      let thumbMap = {};
-      try {
-        thumbMap = await batchResolveThumbUrls(slugs);
-      } catch {
-        /* non-critical */
-      }
-
-      const enriched = slice.map((c) => {
-        const slug = getClipSlugFromUrl(c.clipUrl);
-        const directUrl = slug ? thumbMap[slug] : null;
-        return {
-          ...c,
-          thumbProxy: directUrl
-            ? `/api/img?url=${encodeURIComponent(directUrl)}`
-            : c.thumbProxy,
-        };
-      });
-
-      return {
-        success: true,
-        clips: enriched,
-        total: clips.length,
-        page,
-        pageSize,
-      };
-    };
-
-    if (!force && clipsCache.data && now - clipsCache.ts < 10_000) {
-      return res.json(await jsonPage(clipsCache.data));
-    }
-
-    const csvUrl = `${SHEETS_CSV}${
-      SHEETS_CSV.includes("?") ? "&" : "?"
-    }_ts=${now}`;
-
-    const r = await fetch(csvUrl, {
-      headers: {
-        "User-Agent": "VamoosClips/1.0",
-        Accept: "text/csv",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });
-
-    if (!r.ok) {
-      const t = await r.text();
-      console.error("[clips] fetch CSV failed:", r.status, t.slice(0, 200));
+    let clips;
+    try {
+      clips = await loadSortedClipsFromSheets(force);
+    } catch (e) {
+      console.error("[clips] fetch CSV failed:", e);
       return res.status(502).json({
         success: false,
         error: "CSV fetch failed",
-        detail: t.slice(0, 200),
+        detail: String(e.message || e).slice(0, 200),
       });
     }
 
-    const csvText = await r.text();
-    const { header, rows } = parseCsv(csvText);
+    const start = (page - 1) * pageSize;
+    const slice = clips.slice(start, start + pageSize);
+    const enriched = await enrichClipsSliceWithThumbs(slice);
 
-    const idx = {
-      ts: header.findIndex((h) => /позначка часу|timestamp/i.test(h)),
-      url: header.findIndex((h) => /clip\s*url|url\s*кліпу|посилання/i.test(h)),
-      title: header.findIndex((h) => /назва|title/i.test(h)),
-      author: header.findIndex((h) => /автор|стрімер|author|streamer/i.test(h)),
-      note: header.findIndex((h) => /нік|коментар|note|comment/i.test(h)),
-    };
-
-    if (idx.url < 0) {
-      console.error("[clips] URL column not found. Header =", header);
-      return res.json(await jsonPage([]));
-    }
-
-    let clips = rows
-      .map((cols) => {
-        const clipUrl = (cols[idx.url] ?? "").trim();
-        if (!clipUrl) return null;
-        const slug = getClipSlugFromUrl(clipUrl);
-        const thumbProxy = slug
-          ? `/api/clip-thumb?slug=${encodeURIComponent(slug)}`
-          : null;
-        return {
-          clipUrl,
-          thumbProxy,
-          title: (idx.title >= 0 ? (cols[idx.title] ?? "").trim() : "") || "Без назви",
-          author:
-            (idx.author >= 0 ? (cols[idx.author] ?? "").trim() : "") ||
-            "Невідомо",
-          note: idx.note >= 0 ? (cols[idx.note] ?? "").trim() : "",
-          createdAt: idx.ts >= 0 ? cols[idx.ts] ?? null : null,
-        };
-      })
-      .filter(Boolean);
-
-    function parseDate(str) {
-      if (!str) return 0;
-      const m = str.match(
-        /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/
-      );
-      if (m) {
-        const [_, d, mo, y, h, mi, s] = m;
-        return new Date(y, mo - 1, d, h, mi, s || 0).getTime();
-      }
-      return Date.parse(str) || 0;
-    }
-
-    const seen = new Set();
-    clips = clips.filter((c) =>
-      seen.has(c.clipUrl) ? false : (seen.add(c.clipUrl), true)
-    );
-
-    clips.sort((a, b) => parseDate(b.createdAt) - parseDate(a.createdAt));
-
-    clipsCache.data = clips;
-    clipsCache.ts = now;
-
-    return res.json(await jsonPage(clips));
+    return res.json({
+      success: true,
+      clips: enriched,
+      total: clips.length,
+      page,
+      pageSize,
+    });
   } catch (e) {
     console.error(e);
     return res
@@ -407,7 +541,7 @@ async function fetchThumbViaGql(slug) {
     const r = await fetch(TWITCH_GQL, {
       method: "POST",
       headers: {
-        "Client-ID": TWITCH_CLIENT_ID,
+        "Client-ID": TWITCH_PUBLIC_CLIENT_ID,
         "Content-Type": "application/json",
       },
       body,
@@ -587,20 +721,615 @@ app.get("/api/img", async (req, res) => {
 });
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-function normalizeClipUrl(raw) {
-  try {
-    if (!isValidHttpUrl(raw)) return null;
-    const u = new URL(raw);
-    const p = u.pathname.split("/").filter(Boolean);
-    const i = p.findIndex((x) => x.toLowerCase() === "clip");
-    if (i >= 0 && p[i + 1]) return `https://clips.twitch.tv/${p[i + 1]}`;
-    if (u.hostname.includes("clips.twitch.tv")) return raw;
-  } catch {
-    /* invalid URL */
-  }
-  return null;
+/* --- Twitch OAuth (сесія; для гри та майбутнього голосування) --- */
+const TWITCH_CLIENT_ID = process.env.TWITCH_CLIENT_ID || "";
+const TWITCH_CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET || "";
+const TWITCH_REDIRECT_URI = process.env.TWITCH_REDIRECT_URI || "";
+/** Після OAuth відкривати фронт на іншому порту (Vite), напр. http://localhost:5173 або :5000 */
+const APP_PUBLIC_URL = (process.env.APP_PUBLIC_URL || "").replace(/\/$/, "");
+
+function twitchOAuthReady() {
+  return !!(TWITCH_CLIENT_ID && TWITCH_CLIENT_SECRET && TWITCH_REDIRECT_URI);
 }
-app.get(/^\/(?!api\/).*/, (req, res) => {
+
+app.get("/api/auth/me", (req, res) => {
+  const u = req.session.twitchUser;
+  if (!u) {
+    return res.json({ user: null });
+  }
+  return res.json({
+    user: {
+      id: u.id,
+      login: u.login,
+      displayName: u.displayName,
+      profileImageUrl: u.profileImageUrl,
+    },
+  });
+});
+
+app.get("/auth/twitch", (req, res) => {
+  if (!twitchOAuthReady()) {
+    return res
+      .status(503)
+      .type("text/plain; charset=utf-8")
+      .send(
+        "Twitch OAuth не налаштовано. Задай змінні TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_REDIRECT_URI."
+      );
+  }
+  let returnTo = "/clip-of-month";
+  const rt = req.query.returnTo;
+  if (typeof rt === "string" && rt.startsWith("/") && !rt.startsWith("//")) {
+    returnTo = rt.slice(0, 512);
+  }
+  req.session.returnTo = returnTo;
+  const state = crypto.randomBytes(16).toString("hex");
+  req.session.oauthState = state;
+  const params = new URLSearchParams({
+    client_id: TWITCH_CLIENT_ID,
+    redirect_uri: TWITCH_REDIRECT_URI,
+    response_type: "code",
+    scope: "user:read:email",
+    state,
+  });
+  res.redirect(`https://id.twitch.tv/oauth2/authorize?${params}`);
+});
+
+app.get("/auth/twitch/callback", async (req, res) => {
+  if (!twitchOAuthReady()) {
+    return res.redirect("/?oauth_error=config");
+  }
+  const { code, state, error, error_description: errDesc } = req.query;
+  if (error) {
+    console.error("[twitch oauth]", error, errDesc);
+    return res.redirect("/?oauth_error=denied");
+  }
+  if (
+    typeof code !== "string" ||
+    typeof state !== "string" ||
+    state !== req.session.oauthState
+  ) {
+    return res.redirect("/?oauth_error=state");
+  }
+  delete req.session.oauthState;
+
+  try {
+    const tokenRes = await fetch("https://id.twitch.tv/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: TWITCH_CLIENT_ID,
+        client_secret: TWITCH_CLIENT_SECRET,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: TWITCH_REDIRECT_URI,
+      }),
+    });
+    const tokenJson = await tokenRes.json();
+    if (!tokenRes.ok) {
+      console.error("[twitch token]", tokenJson);
+      return res.redirect("/?oauth_error=token");
+    }
+    const accessToken = tokenJson.access_token;
+
+    const userRes = await fetch("https://api.twitch.tv/helix/users", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Client-Id": TWITCH_CLIENT_ID,
+      },
+    });
+    const userJson = await userRes.json();
+    if (!userRes.ok || !userJson.data?.[0]) {
+      console.error("[twitch user]", userJson);
+      return res.redirect("/?oauth_error=user");
+    }
+    const row = userJson.data[0];
+    req.session.twitchUser = {
+      id: row.id,
+      login: row.login,
+      displayName: row.display_name,
+      profileImageUrl: row.profile_image_url,
+    };
+    req.session.twitchAccessToken = accessToken;
+
+    const back =
+      typeof req.session.returnTo === "string"
+        ? req.session.returnTo
+        : "/clip-of-month";
+    delete req.session.returnTo;
+    const safeBack =
+      typeof back === "string" &&
+      back.startsWith("/") &&
+      !back.startsWith("//") &&
+      back.length <= 512
+        ? back
+        : "/clip-of-month";
+    const target =
+      APP_PUBLIC_URL && safeBack.startsWith("/")
+        ? `${APP_PUBLIC_URL}${safeBack}`
+        : safeBack;
+    res.redirect(target);
+  } catch (e) {
+    console.error("[twitch callback]", e);
+    res.redirect("/?oauth_error=server");
+  }
+});
+
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) console.error(err);
+    res.json({ success: true });
+  });
+});
+
+/* --- «Кліп місяця»: голосування (макс. 10 останніх з таблиці; CLIP_MONTH_VOTE_POOL у .env, 5–10) --- */
+const CLIP_MONTH_ROUND_ID =
+  process.env.CLIP_MONTH_ROUND_ID || "clip-month-round-test-1";
+const CLIP_MONTH_VOTES_FILE = path.join(__dirname, "clip-month-votes.json");
+const CLIP_MONTH_VOTE_POOL_MAX = 10;
+const CLIP_MONTH_VOTE_POOL = Math.min(
+  CLIP_MONTH_VOTE_POOL_MAX,
+  Math.max(
+    5,
+    parseInt(
+      String(process.env.CLIP_MONTH_VOTE_POOL ?? String(CLIP_MONTH_VOTE_POOL_MAX)),
+      10
+    ) || CLIP_MONTH_VOTE_POOL_MAX
+  )
+);
+const CLIP_MONTH_PICKS = Math.min(
+  10,
+  Math.max(1, parseInt(String(process.env.CLIP_MONTH_PICKS ?? "3"), 10) || 3)
+);
+
+function clipMonthVoteKey(clipUrl) {
+  const slug = getClipSlugFromUrl(clipUrl);
+  if (slug) return `s:${slug}`;
+  return `u:${String(clipUrl).trim()}`;
+}
+
+async function readClipMonthVoteState() {
+  try {
+    const raw = await fs.readFile(CLIP_MONTH_VOTES_FILE, "utf8");
+    const j = JSON.parse(raw);
+    if (j.roundId !== CLIP_MONTH_ROUND_ID) {
+      return {
+        roundId: CLIP_MONTH_ROUND_ID,
+        byTwitchId: {},
+        tallies: {},
+      };
+    }
+    return {
+      roundId: CLIP_MONTH_ROUND_ID,
+      byTwitchId:
+        typeof j.byTwitchId === "object" && j.byTwitchId ? j.byTwitchId : {},
+      tallies: typeof j.tallies === "object" && j.tallies ? j.tallies : {},
+    };
+  } catch {
+    return {
+      roundId: CLIP_MONTH_ROUND_ID,
+      byTwitchId: {},
+      tallies: {},
+    };
+  }
+}
+
+async function writeClipMonthVoteState(state) {
+  try {
+    await fs.writeFile(
+      CLIP_MONTH_VOTES_FILE,
+      JSON.stringify(state, null, 2),
+      "utf8"
+    );
+  } catch (e) {
+    console.error("[clip-month votes] write failed:", CLIP_MONTH_VOTES_FILE, e);
+    throw e;
+  }
+}
+
+/** Попередні голоси користувача: масив ключів або legacy — один рядок. */
+function clipMonthPrevVoteKeys(state, uid) {
+  const v = state.byTwitchId[uid];
+  if (Array.isArray(v)) return v.filter((x) => typeof x === "string" && x);
+  if (typeof v === "string" && v) return [v];
+  return [];
+}
+
+function clipMonthRemoveUserVotesFromTallies(state, uid) {
+  for (const key of clipMonthPrevVoteKeys(state, uid)) {
+    state.tallies[key] = Math.max(0, (state.tallies[key] || 0) - 1);
+  }
+}
+
+/* --- Supabase для голосів (якщо задано SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY) --- */
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
+const SUPABASE_SERVICE_ROLE_KEY = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+).trim();
+
+let supabaseVoteClient = null;
+function getSupabaseVoteClient() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
+  if (!supabaseVoteClient) {
+    supabaseVoteClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+  return supabaseVoteClient;
+}
+
+async function clipMonthSupabaseFetchRound(sb, roundId, allowedKeysSet, uid) {
+  const { data, error } = await sb
+    .from("clip_month_ballots")
+    .select("twitch_user_id, vote_keys")
+    .eq("round_id", roundId);
+  if (error) {
+    console.error("[clip-month supabase] select", error);
+    throw error;
+  }
+  const tallies = {};
+  for (const k of allowedKeysSet) tallies[k] = 0;
+  let myVoteKeys = [];
+  for (const row of data || []) {
+    const ru = String(row.twitch_user_id ?? "");
+    const keys = Array.isArray(row.vote_keys)
+      ? row.vote_keys.filter((x) => typeof x === "string")
+      : [];
+    if (uid && ru === uid) myVoteKeys = keys;
+    for (const k of keys) {
+      if (allowedKeysSet.has(k)) tallies[k] = (tallies[k] || 0) + 1;
+    }
+  }
+  return { tallies, myVoteKeys };
+}
+
+function clipMonthTitlesForPicks(slice, urlList) {
+  return urlList.map((url) => {
+    const key = clipMonthVoteKey(url);
+    const row = slice.find((c) => clipMonthVoteKey(c.clipUrl) === key);
+    const t = (row?.title || "Без назви").trim();
+    return t.length > 500 ? `${t.slice(0, 497)}…` : t;
+  });
+}
+
+async function clipMonthSupabaseUpsertBallot(
+  sb,
+  roundId,
+  uid,
+  voteKeys,
+  { twitchLogin, clipTitles } = {}
+) {
+  const payload = {
+    round_id: roundId,
+    twitch_user_id: uid,
+    vote_keys: voteKeys,
+    updated_at: new Date().toISOString(),
+  };
+  if (typeof twitchLogin === "string") {
+    payload.twitch_login = twitchLogin.slice(0, 128);
+  }
+  if (Array.isArray(clipTitles) && clipTitles.length === voteKeys.length) {
+    payload.clip_titles = clipTitles;
+  }
+  const { error } = await sb.from("clip_month_ballots").upsert(payload, {
+    onConflict: "round_id,twitch_user_id",
+  });
+  if (error) {
+    console.error("[clip-month supabase] upsert", error);
+    throw error;
+  }
+}
+
+const CLIP_MONTH_ALREADY_VOTED_MSG =
+  "Ти вже віддав голос у цьому турі. Повторного голосування в одному раунді немає.";
+
+/** Чи вже збережено повний бюлетень (один голос на раунд, без перезапису). */
+async function clipMonthUserAlreadyBalloted(sb, roundId, uid) {
+  if (!uid) return false;
+  if (sb) {
+    const { data, error } = await sb
+      .from("clip_month_ballots")
+      .select("vote_keys")
+      .eq("round_id", roundId)
+      .eq("twitch_user_id", uid)
+      .maybeSingle();
+    if (error) {
+      console.error("[clip-month] read ballot", error);
+      return false;
+    }
+    const keys = Array.isArray(data?.vote_keys)
+      ? data.vote_keys.filter((x) => typeof x === "string")
+      : [];
+    return keys.length >= CLIP_MONTH_PICKS;
+  }
+  try {
+    const state = await readClipMonthVoteState();
+    if (state.roundId !== roundId) return false;
+    const prev = state.byTwitchId[uid];
+    const keys = Array.isArray(prev)
+      ? prev.filter((x) => typeof x === "string")
+      : [];
+    return keys.length >= CLIP_MONTH_PICKS;
+  } catch {
+    return false;
+  }
+}
+
+const clipMonthVotePostLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  message: { success: false, error: "Забагато спроб голосування" },
+});
+
+app.get("/api/clip-month/vote-board", async (req, res) => {
+  try {
+    let clips;
+    let poolSource = "sheets";
+    try {
+      const loaded = await loadClipsForClipMonth();
+      clips = loaded.clips;
+      poolSource = loaded.source;
+    } catch (e) {
+      console.error("[vote-board]", e);
+      return res.status(502).json({
+        success: false,
+        error: "Не вдалося завантажити кліпи",
+      });
+    }
+
+    const slice = clips.slice(0, CLIP_MONTH_VOTE_POOL);
+    const enriched = await enrichClipsSliceWithThumbs(slice);
+    const boardClips = enriched.slice(0, CLIP_MONTH_VOTE_POOL_MAX);
+    const allowedKeys = new Set(
+      boardClips.map((c) => clipMonthVoteKey(c.clipUrl))
+    );
+
+    const tu = req.session?.twitchUser;
+    const uid = tu?.id != null ? String(tu.id) : "";
+    let myVoteKeys = [];
+    const tallies = {};
+    for (const k of allowedKeys) tallies[k] = 0;
+
+    const sb = getSupabaseVoteClient();
+    if (sb) {
+      try {
+        const agg = await clipMonthSupabaseFetchRound(
+          sb,
+          CLIP_MONTH_ROUND_ID,
+          allowedKeys,
+          uid
+        );
+        for (const k of allowedKeys) tallies[k] = agg.tallies[k] ?? 0;
+        myVoteKeys = agg.myVoteKeys;
+      } catch {
+        return res.status(500).json({
+          success: false,
+          error: "Не вдалося прочитати голоси з бази (Supabase).",
+        });
+      }
+    } else {
+      const state = await readClipMonthVoteState();
+      if (uid && state.byTwitchId[uid] != null) {
+        myVoteKeys = clipMonthPrevVoteKeys(state, uid);
+      }
+      for (const k of allowedKeys) {
+        tallies[k] = state.tallies[k] ?? 0;
+      }
+    }
+
+    return res.json({
+      success: true,
+      roundId: CLIP_MONTH_ROUND_ID,
+      poolSize: CLIP_MONTH_VOTE_POOL,
+      picksRequired: CLIP_MONTH_PICKS,
+      poolSource,
+      votesStorage: sb ? "supabase" : "file",
+      clips: boardClips.map((c) => {
+        const voteKey = clipMonthVoteKey(c.clipUrl);
+        return {
+          clipUrl: c.clipUrl,
+          title: c.title,
+          author: c.author,
+          thumbProxy: c.thumbProxy,
+          voteKey,
+          votes: tallies[voteKey] ?? 0,
+        };
+      }),
+      myVoteKeys,
+    });
+  } catch (e) {
+    console.error("[vote-board]", e);
+    return res.status(500).json({ success: false, error: "Помилка сервера" });
+  }
+});
+
+app.post("/api/clip-month/vote", clipMonthVotePostLimiter, async (req, res) => {
+  try {
+    const tu = req.session?.twitchUser;
+    if (!tu || tu.id === undefined || tu.id === null) {
+      return res.status(401).json({
+        success: false,
+        error: "Увійди через Twitch, щоб голосувати",
+      });
+    }
+
+    const uid = String(tu.id);
+    const rawList = req.body?.clipUrls ?? req.body?.clipURLS;
+    let urlList = Array.isArray(rawList)
+      ? rawList.map((u) => String(u ?? "").trim()).filter(Boolean)
+      : [];
+
+    if (urlList.length === 0 && req.body?.clipUrl) {
+      urlList = [String(req.body.clipUrl).trim()].filter(Boolean);
+    }
+
+    if (urlList.length !== CLIP_MONTH_PICKS) {
+      return res.status(400).json({
+        success: false,
+        error: `Обери рівно ${CLIP_MONTH_PICKS} різні кліпи й натисни «Підтвердити голос».`,
+      });
+    }
+
+    if (new Set(urlList).size !== CLIP_MONTH_PICKS) {
+      return res.status(400).json({
+        success: false,
+        error: `Усі ${CLIP_MONTH_PICKS} кліпи мають бути різними.`,
+      });
+    }
+
+    for (const u of urlList) {
+      if (!isValidHttpUrl(u)) {
+        return res.status(400).json({
+          success: false,
+          error: "Некоректне посилання на кліп",
+        });
+      }
+    }
+
+    let clips;
+    try {
+      clips = (await loadClipsForClipMonth()).clips;
+    } catch {
+      return res.status(502).json({
+        success: false,
+        error: "Не вдалося перевірити список кліпів",
+      });
+    }
+
+    const slice = clips.slice(0, CLIP_MONTH_VOTE_POOL);
+    const allowedKeys = new Set(slice.map((c) => clipMonthVoteKey(c.clipUrl)));
+
+    const newKeys = urlList.map((u) => clipMonthVoteKey(u));
+    if (new Set(newKeys).size !== CLIP_MONTH_PICKS) {
+      return res.status(400).json({
+        success: false,
+        error: "Не можна обрати два рази той самий кліп (різні посилання).",
+      });
+    }
+
+    for (const k of newKeys) {
+      if (!allowedKeys.has(k)) {
+        return res.status(400).json({
+          success: false,
+          error: "Один із кліпів не з поточного списку для голосування.",
+        });
+      }
+    }
+
+    const sb = getSupabaseVoteClient();
+    const alreadyBalloted = await clipMonthUserAlreadyBalloted(
+      sb,
+      CLIP_MONTH_ROUND_ID,
+      uid
+    );
+    if (alreadyBalloted) {
+      return res.status(403).json({
+        success: false,
+        error: CLIP_MONTH_ALREADY_VOTED_MSG,
+      });
+    }
+
+    const clipTitles = clipMonthTitlesForPicks(slice, urlList);
+    const twitchLogin = String(tu.login || tu.displayName || "").trim() || null;
+
+    if (sb) {
+      try {
+        await clipMonthSupabaseUpsertBallot(
+          sb,
+          CLIP_MONTH_ROUND_ID,
+          uid,
+          newKeys,
+          { twitchLogin, clipTitles }
+        );
+      } catch {
+        return res.status(500).json({
+          success: false,
+          error: "Не вдалося зберегти голос у Supabase.",
+        });
+      }
+    } else {
+      let state = await readClipMonthVoteState();
+      if (state.roundId !== CLIP_MONTH_ROUND_ID) {
+        state = {
+          roundId: CLIP_MONTH_ROUND_ID,
+          byTwitchId: {},
+          tallies: {},
+        };
+      }
+      clipMonthRemoveUserVotesFromTallies(state, uid);
+      for (const k of newKeys) {
+        state.tallies[k] = (state.tallies[k] || 0) + 1;
+      }
+      state.byTwitchId[uid] = newKeys;
+      await writeClipMonthVoteState(state);
+    }
+
+    const enriched = await enrichClipsSliceWithThumbs(slice);
+    const boardEnriched = enriched.slice(0, CLIP_MONTH_VOTE_POOL_MAX);
+    let clipsOut;
+    if (sb) {
+      let talliesOut = {};
+      try {
+        const agg = await clipMonthSupabaseFetchRound(
+          sb,
+          CLIP_MONTH_ROUND_ID,
+          allowedKeys,
+          uid
+        );
+        talliesOut = agg.tallies;
+      } catch {
+        for (const k of allowedKeys) talliesOut[k] = 0;
+      }
+      clipsOut = boardEnriched.map((c) => {
+        const k = clipMonthVoteKey(c.clipUrl);
+        return {
+          clipUrl: c.clipUrl,
+          title: c.title,
+          author: c.author,
+          thumbProxy: c.thumbProxy,
+          voteKey: k,
+          votes: talliesOut[k] ?? 0,
+        };
+      });
+    } else {
+      const state = await readClipMonthVoteState();
+      clipsOut = boardEnriched.map((c) => {
+        const k = clipMonthVoteKey(c.clipUrl);
+        return {
+          clipUrl: c.clipUrl,
+          title: c.title,
+          author: c.author,
+          thumbProxy: c.thumbProxy,
+          voteKey: k,
+          votes: state.tallies[k] ?? 0,
+        };
+      });
+    }
+
+    return res.json({
+      success: true,
+      myVoteKeys: newKeys,
+      clips: clipsOut,
+      roundId: CLIP_MONTH_ROUND_ID,
+      picksRequired: CLIP_MONTH_PICKS,
+      votesStorage: sb ? "supabase" : "file",
+    });
+  } catch (e) {
+    console.error("[clip-month vote]", e);
+    return res
+      .status(500)
+      .json({ success: false, error: "Не вдалося зберегти голос" });
+  }
+});
+
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    success: false,
+    error:
+      "Невідомий API-запит. Онови код бекенда й перезапусти сервер (npm run server) або задеплой останню збірку.",
+  });
+});
+
+app.get(/^\/(?!api\/)(?!auth\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 

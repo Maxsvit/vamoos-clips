@@ -3,6 +3,7 @@ import { NavLink, useSearchParams } from "react-router-dom";
 import ClipsGrid from "../components/ClipsGrid";
 import Footer from "../components/Footer";
 import YouTubeSection from "../components/YouTubeSection";
+import { apiUrl } from "../lib/apiOrigin";
 
 const CLIPS_PAGE_SIZE = 9;
 const MAX_CLIP_PAGES = 10;
@@ -45,7 +46,7 @@ function Home() {
       setLoading(true);
       try {
         const r = await fetch(
-          `/api/clips?page=${pageToFetch}&limit=${CLIPS_PAGE_SIZE}`
+          apiUrl(`/api/clips?page=${pageToFetch}&limit=${CLIPS_PAGE_SIZE}`)
         );
         const data = await r.json();
 
@@ -115,7 +116,7 @@ function Home() {
     let cancelled = false;
     const tick = async () => {
       try {
-        const r = await fetch(`/api/clips?page=1&limit=1`);
+        const r = await fetch(apiUrl(`/api/clips?page=1&limit=1`));
         const data = await r.json();
         const n =
           typeof data?.total === "number"
