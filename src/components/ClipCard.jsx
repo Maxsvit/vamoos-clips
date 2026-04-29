@@ -130,7 +130,7 @@ export default function ClipCard({
         </div>
         <div className={`${footerPad} border-t border-white/[0.06]`}>
           <h3 className={titleCls}>{clip.title}</h3>
-          <p className={authorCls}>Автор: {clip.author}</p>
+          <p className={authorCls}>Стример: {clip.author}</p>
         </div>
       </Tag>
     );
@@ -192,7 +192,7 @@ export default function ClipCard({
 
         <div className={`${footerPad} border-t border-white/[0.06]`}>
           <h3 className={titleCls}>{clip.title}</h3>
-          <p className={authorCls}>Автор: {clip.author}</p>
+          <p className={authorCls}>Стример: {clip.author}</p>
         </div>
       </div>
     );
@@ -246,7 +246,7 @@ export default function ClipCard({
 
       <div className={`${footerPad} border-t border-white/[0.06]`}>
         <h3 className={titleCls}>{clip.title}</h3>
-        <p className={authorCls}>Автор: {clip.author}</p>
+        <p className={authorCls}>Стрімер: {clip.author}</p>
       </div>
     </a>
   );

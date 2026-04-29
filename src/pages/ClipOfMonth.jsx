@@ -113,7 +113,7 @@ function getParallelMonthLabels(schedule) {
  * null — рахувати фазу за датами туру нижче.
  * @type {null | "upcoming" | "submission" | "voting" | "results" | "idle"}
  */
-const PREVIEW_PHASE = "submission";
+const PREVIEW_PHASE = null;
 
 function getContestPhase(now = new Date()) {
   const y = CONTEST_YEAR;

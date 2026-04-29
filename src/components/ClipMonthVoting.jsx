@@ -242,13 +242,6 @@ export default function ClipMonthVoting() {
               відкриває плеєр тут; один Twitch-акаунт — один бюлетень за раунд, без
               повторного голосування.
             </p>
-            {poolSource === "manual" ? (
-              <p className="text-xs text-violet-300/90 leading-relaxed border-l-2 border-violet-500/50 pl-3">
-                Список для голосування задано вручну на сервері (
-                <code className="text-violet-200/90">clip-month-pool.json</code>
-                ). Таблиця Google для цього блоку не використовується.
-              </p>
-            ) : null}
           </div>
           <div className="flex shrink-0 flex-col items-start gap-2 rounded-2xl border border-white/[0.07] bg-black/30 px-5 py-4 backdrop-blur-sm sm:min-w-[12rem]">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
@@ -381,7 +374,7 @@ export default function ClipMonthVoting() {
             </div>
             <div className="px-4 py-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-sm shrink-0">
               <p className="text-gray-500">
-                Автор:{" "}
+                Стрімер:{" "}
                 <span className="text-gray-300">{previewClip.author}</span>
               </p>
               <a
