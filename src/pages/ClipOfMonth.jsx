@@ -11,10 +11,6 @@ const submitClipLinkClass =
   "transition-all duration-200 hover:shadow-[0_3px_18px_rgba(16,185,129,.45)] hover:-translate-y-px " +
   "no-underline mx-0.5";
 
-/** Суми призів у картці «Результати» — трохи яскравіше за основний текст */
-const prizeMoneyClass =
-  "text-amber-200 font-semibold tabular-nums drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]";
-
 const stepBadgeClass = "from-emerald-500 to-teal-600";
 const TELEGRAM_URL = "https://t.me/vamooschannel";
 const YOUTUBE_URL = "https://www.youtube.com/@vamoosnarizky";
@@ -32,9 +28,9 @@ const contestCtaBtnGhostClass =
 
 /**
  * Тур: з 1-го по останній день місяця — подача → голосування за попередній місяць
- * (паралельно збір на новий) → кожного 6 числа нового місяця — підсумки в Telegram.
+ * (паралельно збір на новий) → після голосування одразу знову етап подачі.
  */
-const CONTEST_YEAR = 2026;
+const CONTEST_YEAR = new Date().getFullYear();
 
 const MONTHS_GENITIVE_UK = [
   "січня",
@@ -66,15 +62,13 @@ const MONTHS_NOMINATIVE_UK = [
   "грудень",
 ];
 
-/** Один тур: змінюй лише тут — назви місяців у текстах підставляться самі. */
-function getContestSchedule(year = CONTEST_YEAR) {
+/** Розклад відносно поточного місяця: подача зараз, голосування 1-6 наступного. */
+function getContestSchedule(year = CONTEST_YEAR, baseMonth = new Date().getMonth()) {
   return {
-    submitStart: new Date(year, 3, 1, 0, 0, 0, 0),
-    submitEnd: new Date(year, 3, 30, 23, 59, 59, 999),
-    voteStart: new Date(year, 4, 1, 0, 0, 0, 0),
-    voteEnd: new Date(year, 4, 6, 23, 59, 59, 999),
-    resultsAnnounce: new Date(year, 4, 6, 12, 0, 0, 0),
-    resultsEndShow: new Date(year, 4, 20, 23, 59, 59, 999),
+    submitStart: new Date(year, baseMonth, 1, 0, 0, 0, 0),
+    submitEnd: new Date(year, baseMonth + 1, 0, 23, 59, 59, 999),
+    voteStart: new Date(year, baseMonth + 1, 1, 0, 0, 0, 0),
+    voteEnd: new Date(year, baseMonth + 1, 6, 23, 59, 59, 999),
   };
 }
 
@@ -111,7 +105,7 @@ function getParallelMonthLabels(schedule) {
 /**
  * Прев’ю без прив’язки до календаря: показати конкретну фазу.
  * null — рахувати фазу за датами туру нижче.
- * @type {null | "upcoming" | "submission" | "voting" | "results" | "idle"}
+ * @type {null | "upcoming" | "submission" | "voting" | "idle"}
  */
 const PREVIEW_PHASE = null;
 
@@ -130,10 +124,7 @@ function getContestPhase(now = new Date()) {
   if (now >= s.voteStart && now <= s.voteEnd) {
     return { kind: "voting", year: y };
   }
-  if (now <= s.resultsEndShow) {
-    return { kind: "results", year: y };
-  }
-  return { kind: "idle", year: y };
+  return { kind: "submission", year: y };
 }
 
 function WaitingDots() {
@@ -289,24 +280,6 @@ function ContestStatus() {
     );
   }
 
-  if (phase.kind === "results") {
-    return wrap(
-      <>
-        <p className="text-amber-300/90 text-xs font-semibold uppercase tracking-wide mb-2">
-          Підсумки туру
-        </p>
-        <p className="text-white text-lg font-semibold">
-          Результати —{" "}
-          <span className="text-amber-300">
-            {dayMonthGenitiveUk(schedule.resultsAnnounce)}
-          </span>
-          . Оголошення переможців і рейтингу — у нашому Telegram.
-        </p>
-      </>,
-      false
-    );
-  }
-
   return wrap(
     <>
       <p className="text-gray-300 text-lg font-semibold">
@@ -360,25 +333,6 @@ export default function ClipOfMonth() {
           <p>
             Глядачі голосують за фіналістів. У цей самий період на сайті вже
             відкрита нова подача кліпів.
-          </p>
-        </>
-      ),
-    },
-    {
-      title: "Результати",
-      range: dayMonthGenitiveUk(schedule.resultsAnnounce, false),
-      body: (
-        <>
-          <p>
-            Рейтинг і переможці — <strong>кожного 6 числа</strong> у нашому Telegram.
-          </p>
-          <p>
-            Призи: 1 місце — <span className={prizeMoneyClass}>1000 ₴</span>, 2 місце —{" "}
-            <span className={prizeMoneyClass}>500 ₴</span>, 3 місце —{" "}
-            <span className={prizeMoneyClass}>500 ₴</span>.
-          </p>
-          <p>
-            Автор кліпу, що потрапить у топ-3, отримує грошовий приз.
           </p>
         </>
       ),

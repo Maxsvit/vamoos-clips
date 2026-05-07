@@ -374,7 +374,7 @@ export default function ClipMonthVoting() {
             </div>
             <div className="px-4 py-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-sm shrink-0">
               <p className="text-gray-500">
-                Стрімер:{" "}
+                Стример:{" "}
                 <span className="text-gray-300">{previewClip.author}</span>
               </p>
               <a
