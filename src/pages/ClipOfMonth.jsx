@@ -11,6 +11,10 @@ const submitClipLinkClass =
   "transition-all duration-200 hover:shadow-[0_3px_18px_rgba(16,185,129,.45)] hover:-translate-y-px " +
   "no-underline mx-0.5";
 
+/** Суми призів у картці «Результати» — трохи яскравіше за основний текст */
+const prizeMoneyClass =
+  "text-amber-200 font-semibold tabular-nums drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]";
+
 const stepBadgeClass = "from-emerald-500 to-teal-600";
 const TELEGRAM_URL = "https://t.me/vamooschannel";
 const YOUTUBE_URL = "https://www.youtube.com/@vamoosnarizky";
@@ -109,14 +113,34 @@ function getParallelMonthLabels(schedule) {
  */
 const PREVIEW_PHASE = null;
 
+/** Голосування: з 1 по 6 кожного місяця (за фіналістів попереднього туру). */
+function isClipMonthVotingDays(now = new Date()) {
+  const day = now.getDate();
+  return day >= 1 && day <= 6;
+}
+
+/** Розклад для статусу / підписів: у дні 1–6 — тур попереднього місяця. */
+function getActiveContestSchedule(now = new Date()) {
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  if (isClipMonthVotingDays(now)) {
+    if (m === 0) return getContestSchedule(y - 1, 11);
+    return getContestSchedule(y, m - 1);
+  }
+  return getContestSchedule(y, m);
+}
+
 function getContestPhase(now = new Date()) {
   const y = CONTEST_YEAR;
   if (PREVIEW_PHASE) {
     return { kind: PREVIEW_PHASE, year: y };
   }
-  const s = getContestSchedule(y);
+  const s = getContestSchedule(y, now.getMonth());
   if (now < s.submitStart) {
     return { kind: "upcoming", year: y };
+  }
+  if (isClipMonthVotingDays(now)) {
+    return { kind: "voting", year: y };
   }
   if (now <= s.submitEnd) {
     return { kind: "submission", year: y };
@@ -165,8 +189,7 @@ function ParallelSubmissionDuringVoting({
         <span className="text-emerald-300">{newTourMonthNominative}</span>.
       </p>
       <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-        Не треба чекати кінця голосування: форма нижче на сайті — окремий збір саме
-        за новий календарний місяць туру.
+        Не треба чекати кінця голосування: окремий збір саме за новий календарний місяць туру триває.
       </p>
       <div className="mt-4">
         <Link
@@ -186,8 +209,9 @@ function ParallelSubmissionDuringVoting({
 }
 
 function ContestStatus() {
-  const phase = getContestPhase(new Date());
-  const schedule = getContestSchedule(phase.year);
+  const now = new Date();
+  const phase = getContestPhase(now);
+  const schedule = getActiveContestSchedule(now);
   const parallel = getParallelMonthLabels(schedule);
 
   const wrap = (children, pulse = true) => (
@@ -297,10 +321,13 @@ function getSubmissionStepRange() {
   return "1 — останній день місяця";
 }
 
+function getResultsStepRange(schedule) {
+  return `6 ${MONTHS_GENITIVE_UK[schedule.voteEnd.getMonth()]}`;
+}
+
 export default function ClipOfMonth() {
   const phase = getContestPhase(new Date());
   const schedule = getContestSchedule(CONTEST_YEAR);
-  const parallel = getParallelMonthLabels(schedule);
 
   const steps = [
     {
@@ -333,6 +360,34 @@ export default function ClipOfMonth() {
           <p>
             Глядачі голосують за фіналістів. У цей самий період на сайті вже
             відкрита нова подача кліпів.
+          </p>
+        </>
+      ),
+    },
+    {
+      title: "Результати",
+      range: getResultsStepRange(schedule),
+      body: (
+        <>
+          <p>
+            Рейтинг і переможці — <strong>кожного 6 числа</strong>{" "}
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-emerald-300/95 font-medium hover:text-emerald-200 underline underline-offset-2"
+            >
+              у нашому Telegram
+            </a>
+            .
+          </p>
+          <p>
+            Призи: 1 місце — <span className={prizeMoneyClass}>1000 ₴</span>, 2 місце —{" "}
+            <span className={prizeMoneyClass}>500 ₴</span>, 3 місце —{" "}
+            <span className={prizeMoneyClass}>500 ₴</span>.
+          </p>
+          <p>
+            Грошовий приз отримує той, хто надіслав кліп, що потрапив у топ-3.
           </p>
         </>
       ),

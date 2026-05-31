@@ -862,8 +862,27 @@ app.post("/auth/logout", (req, res) => {
 });
 
 /* --- «Кліп місяця»: голосування (макс. 10 останніх з таблиці; CLIP_MONTH_VOTE_POOL у .env, 5–10) --- */
+/**
+ * Round ID для поточного туру голосування.
+ * Якщо задано в .env — використовується вручну.
+ * Інакше автоматично: голосування 1–6 числа — за попередній місяць,
+ * решта — за поточний. Формат: clip-month-YYYY-MM
+ */
+function autoClipMonthRoundId() {
+  const now = new Date();
+  const day = now.getDate();
+  let year = now.getFullYear();
+  let month = now.getMonth(); // 0-indexed
+  if (day <= 6) {
+    // 1–6 числа: голосуємо за попередній місяць
+    if (month === 0) { month = 11; year -= 1; }
+    else { month -= 1; }
+  }
+  return `clip-month-${year}-${String(month + 1).padStart(2, "0")}`;
+}
+
 const CLIP_MONTH_ROUND_ID =
-  process.env.CLIP_MONTH_ROUND_ID || "clip-month-round-test-1";
+  process.env.CLIP_MONTH_ROUND_ID || autoClipMonthRoundId();
 const CLIP_MONTH_VOTES_FILE = path.join(__dirname, "clip-month-votes.json");
 const CLIP_MONTH_VOTE_POOL_MAX = 10;
 const CLIP_MONTH_VOTE_POOL = Math.min(
