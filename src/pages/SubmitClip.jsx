@@ -161,14 +161,14 @@ export default function SubmitClip() {
 
           <div>
             <label className="block text-sm text-gray-300 mb-1">
-              Ваш нік / коментар + для конкурсу, як можна з вами зв'язатися, ваш телеграм
+              Ваш нік / коментар
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="w-full p-3 rounded-lg bg-[#121016] ring-1 ring-white/10 outline-none"
-              placeholder="Ваш телеграм: @your_telegram_username"
+              placeholder="Необов'язково"
             />
           </div>
 

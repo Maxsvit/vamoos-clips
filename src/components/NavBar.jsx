@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/img/logo.jpg";
 import { useAuth } from "../context/AuthContext";
+import { CLIP_OF_MONTH_ENABLED } from "../lib/features";
 
 function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,9 +46,11 @@ function NavBar() {
              bg-[#0c0224]/95 md:bg-transparent backdrop-blur md:backdrop-blur-0
              p-3 md:p-0 rounded-2xl`}
         >
-          <NavLink to="/clip-of-month" className={linkBtnClipMonth}>
-            Кліп місяця 🏆
-          </NavLink>
+          {CLIP_OF_MONTH_ENABLED && (
+            <NavLink to="/clip-of-month" className={linkBtnClipMonth}>
+              Кліп місяця 🏆
+            </NavLink>
+          )}
 
           <NavLink to="/submit" className={linkBtn}>
             Додати кліп 🚀
