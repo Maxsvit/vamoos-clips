@@ -31,3 +31,5 @@ server/clip-month-votes.json
 server/clip-month-pool.json
 
 .env
+# Локальні голоси Viewers Choice (якщо без Supabase)
+server/viewers-choice/votes-*.json

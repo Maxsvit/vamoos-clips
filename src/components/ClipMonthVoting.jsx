@@ -192,7 +192,7 @@ export default function ClipMonthVoting() {
 
   if (loading || authLoading) {
     return (
-      <div className="rounded-2xl bg-gray-900/60 ring-1 ring-amber-500/20 p-10 text-center text-gray-400 text-sm md:col-span-2">
+      <div className=" bg-[#151515] border border-[var(--vc-line)] p-10 text-center text-[var(--vc-muted)] text-sm md:col-span-2">
         Завантаження списку кліпів…
       </div>
     );
@@ -200,7 +200,7 @@ export default function ClipMonthVoting() {
 
   if (err && clips.length === 0) {
     return (
-      <div className="rounded-2xl bg-red-950/40 ring-1 ring-red-500/30 p-6 text-center text-red-200 text-sm md:col-span-2">
+      <div className=" bg-red-950/40 border border-[var(--vc-line)] p-6 text-center text-[#ff8a7a] text-sm md:col-span-2">
         {err}
       </div>
     );
@@ -220,41 +220,41 @@ export default function ClipMonthVoting() {
         (clips.length > 0 ? "pb-28 sm:pb-28 md:pb-0" : "")
       }
     >
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-[#1a0f08] via-gray-950 to-[#0a1628] p-6 md:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-600/10 blur-3xl" />
+      <div className="relative overflow-hidden border border-[var(--vc-line)] bg-[var(--vc-bg)] p-6 md:p-10 ">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 bg-[#151515] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 bg-violet-600/10 blur-3xl" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-3">
-            <p className="text-amber-300/90 text-xs font-semibold uppercase tracking-[0.2em]">
+            <p className="text-[var(--vc-accent)] text-xs font-semibold uppercase tracking-[0.2em]">
               Кліп місяця
             </p>
             <h3 className="text-2xl font-bold tracking-tight text-white md:text-3xl">
               Обери свій топ із{" "}
-              <span className="text-amber-200">{poolSize}</span>{" "}
+              <span className="text-[var(--vc-accent)]">{poolSize}</span>{" "}
               {poolSource === "manual"
                 ? "кліпів у цьому турі"
                 : "останніх кліпів з таблиці"}
             </h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-[var(--vc-muted)] text-sm leading-relaxed">
               Відміть{" "}
-              <span className="font-medium text-amber-200/95">{picksRequired}</span>{" "}
+              <span className="font-medium text-[var(--vc-accent)]">{picksRequired}</span>{" "}
               різні відео в сітці нижче, потім підтвердь голос. Клік по прев’ю
               відкриває плеєр тут; один Twitch-акаунт — один бюлетень за раунд, без
               повторного голосування.
             </p>
           </div>
-          <div className="flex shrink-0 flex-col items-start gap-2 rounded-2xl border border-white/[0.07] bg-black/30 px-5 py-4 backdrop-blur-sm sm:min-w-[12rem]">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+          <div className="flex shrink-0 flex-col items-start gap-2 border border-white/[0.07] bg-black/30 px-5 py-4 backdrop-blur-sm sm:min-w-[12rem]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--vc-muted)]">
               Прогрес
             </p>
-            <p className="text-3xl font-black tabular-nums text-amber-200">
+            <p className="text-3xl font-black tabular-nums text-[var(--vc-accent)]">
               {selectedClipUrls.length}
-              <span className="text-lg font-semibold text-gray-500">
+              <span className="text-lg font-semibold text-[var(--vc-muted)]">
                 {" "}
                 / {picksRequired}
               </span>
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--vc-muted)]">
               {selectedClipUrls.length === picksRequired
                 ? "Можна підтверджувати"
                 : "Ще обери кліпи"}
@@ -264,17 +264,17 @@ export default function ClipMonthVoting() {
       </div>
 
       {!user ? (
-        <div className="rounded-2xl bg-gray-900/80 ring-1 ring-violet-500/20 p-8 text-center">
-          <p className="text-gray-300 text-sm mb-4">
+        <div className=" bg-[#151515] border border-[var(--vc-line)] p-8 text-center">
+          <p className="text-[#c9c9c5] text-sm mb-4">
             Щоб голос зарахувався, увійди через Twitch.
           </p>
           <button
             type="button"
             onClick={login}
             className={
-              "px-8 py-3 rounded-2xl font-bold text-white inline-flex items-center gap-2 " +
-              "bg-[#9146FF] hover:bg-[#7c3aed] border border-white/10 " +
-              "shadow-[0_6px_24px_rgba(145,70,255,.4)] transition-transform hover:scale-[1.02] active:scale-95"
+              "px-8 py-3 font-bold text-white inline-flex items-center gap-2 " +
+              "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 border border-[var(--vc-line)] " +
+              " transition-transform hover:scale-[1.02] active:scale-95"
             }
           >
             Увійти через Twitch
@@ -283,7 +283,7 @@ export default function ClipMonthVoting() {
       ) : null}
 
       {err ? (
-        <p className="text-center text-sm text-red-400/95">{err}</p>
+        <p className="text-center text-sm text-[#ff8a7a]">{err}</p>
       ) : null}
 
       {voteToast ? (
@@ -291,11 +291,11 @@ export default function ClipMonthVoting() {
           role="alert"
           aria-live={voteToast.variant === "error" ? "assertive" : "polite"}
           className={
-            "fixed bottom-6 left-1/2 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 px-5 py-4 rounded-2xl shadow-2xl " +
-            "ring-2 text-sm leading-relaxed " +
+            "fixed bottom-6 left-1/2 z-[100] w-[min(92vw,28rem)] -translate-x-1/2 px-5 py-4   " +
+            "border text-sm leading-relaxed " +
             (voteToast.variant === "success"
-              ? "bg-emerald-950/95 text-emerald-50 ring-emerald-500/45"
-              : "bg-red-950/95 text-red-50 ring-red-500/45")
+              ? "bg-[#151515] text-emerald-50 border-[var(--vc-line)]"
+              : "bg-red-950/95 text-red-50 border-[var(--vc-line)]")
           }
         >
           <div className="flex items-start gap-3">
@@ -303,7 +303,7 @@ export default function ClipMonthVoting() {
             <button
               type="button"
               onClick={() => setVoteToast(null)}
-              className="shrink-0 rounded-lg px-1.5 py-0.5 text-lg leading-none opacity-75 hover:opacity-100"
+              className="shrink-0 px-1.5 py-0.5 text-lg leading-none opacity-75 hover:opacity-100"
               aria-label="Закрити"
             >
               ×
@@ -322,7 +322,7 @@ export default function ClipMonthVoting() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="clip-embed-dialog-title"
-            className="relative w-full max-w-4xl rounded-2xl bg-[#0e0e10] ring-2 ring-violet-500/35 shadow-2xl overflow-hidden flex flex-col max-h-[min(92vh,900px)]"
+            className="relative w-full max-w-4xl bg-[var(--vc-bg)] border border-[var(--vc-line)] overflow-hidden flex flex-col max-h-[min(92vh,900px)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-white/[0.08] shrink-0">
@@ -335,7 +335,7 @@ export default function ClipMonthVoting() {
               <button
                 type="button"
                 onClick={() => setPreviewClip(null)}
-                className="shrink-0 rounded-xl px-3 py-1.5 text-2xl leading-none text-gray-300 hover:bg-white/10 hover:text-white"
+                className="shrink-0 px-3 py-1.5 text-2xl leading-none text-[#c9c9c5] hover:bg-[#151515] hover:text-white"
                 aria-label="Закрити перегляд"
               >
                 ×
@@ -358,13 +358,13 @@ export default function ClipMonthVoting() {
                   );
                 }
                 return (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center text-gray-400 text-sm">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center text-[var(--vc-muted)] text-sm">
                     <p>Не вдалося вбудувати це посилання. Відкрий кліп на Twitch.</p>
                     <a
                       href={previewClip.clipUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-violet-400 hover:text-violet-300 underline font-medium"
+                      className="text-[var(--vc-accent)] hover:text-[var(--vc-accent)] underline font-medium"
                     >
                       Відкрити на Twitch
                     </a>
@@ -373,15 +373,15 @@ export default function ClipMonthVoting() {
               })()}
             </div>
             <div className="px-4 py-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-sm shrink-0">
-              <p className="text-gray-500">
+              <p className="text-[var(--vc-muted)]">
                 Стример:{" "}
-                <span className="text-gray-300">{previewClip.author}</span>
+                <span className="text-[#c9c9c5]">{previewClip.author}</span>
               </p>
               <a
                 href={previewClip.clipUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-violet-400 hover:text-violet-300 font-medium"
+                className="text-[var(--vc-accent)] hover:text-[var(--vc-accent)] font-medium"
               >
                 Відкрити на Twitch ↗
               </a>
@@ -393,7 +393,7 @@ export default function ClipMonthVoting() {
       {clips.length > 0 ? (
         <>
           <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-[var(--vc-muted)]">
               Кандидати
             </h4>
             <ul className="m-0 mx-auto grid max-w-5xl list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2">
@@ -404,16 +404,16 @@ export default function ClipMonthVoting() {
                   <li key={c.voteKey}>
                     <div
                       className={
-                        "flex h-full flex-col overflow-hidden rounded-2xl border transition-all duration-200 " +
+                        "flex h-full flex-col overflow-hidden border transition-all duration-200 " +
                         (picked
-                          ? "border-amber-400/50 bg-amber-950/20 shadow-[0_0_28px_rgba(251,191,36,.12)]"
-                          : "border-white/[0.08] bg-gray-950/40 hover:border-violet-500/25")
+                          ? "border-[var(--vc-line)] bg-[#151515] "
+                          : "border-white/[0.08] bg-gray-950/40 hover:border-[var(--vc-line)]")
                       }
                     >
                       <div className="relative">
                         {order != null ? (
                           <span
-                            className="absolute left-2 top-2 z-20 flex h-8 min-w-[2rem] items-center justify-center rounded-full bg-amber-400 px-2 text-sm font-black text-gray-950 shadow-lg ring-2 ring-gray-950/80"
+                            className="absolute left-2 top-2 z-20 flex h-8 min-w-[2rem] items-center justify-center bg-[var(--vc-accent)] px-2 text-sm font-black text-[var(--vc-bg)] border border-[var(--vc-line)]"
                             aria-label={`Місце в топі: ${order}`}
                           >
                             {order}
@@ -441,10 +441,10 @@ export default function ClipMonthVoting() {
                           }
                           onClick={() => togglePick(c.clipUrl)}
                           className={
-                            "w-full rounded-xl py-3 px-3 text-sm font-bold transition-all " +
+                            "w-full py-3 px-3 text-sm font-bold transition-all " +
                             (picked
-                              ? "bg-gray-800/90 text-amber-200 ring-1 ring-amber-500/40 hover:bg-gray-700"
-                              : "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-400 hover:to-orange-500 " +
+                              ? "bg-gray-800/90 text-[var(--vc-accent)] border border-[var(--vc-line)] hover:bg-gray-700"
+                              : "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 text-white hover:from-amber-400 hover:to-orange-500 " +
                                 "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:from-amber-500 disabled:hover:to-orange-600")
                           }
                         >
@@ -466,21 +466,21 @@ export default function ClipMonthVoting() {
 
           <div
             className={
-              "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-emerald-500/20 bg-gray-950/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-12px_48px_rgba(0,0,0,0.55)] backdrop-blur-lg " +
-              "md:relative md:inset-auto md:z-0 md:mt-8 md:border md:rounded-2xl md:border-emerald-500/25 md:shadow-none"
+              "fixed inset-x-0 bottom-0 z-30 mx-auto max-w-xl border-t border-[var(--vc-line)] bg-gray-950/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-lg " +
+              "md:relative md:inset-auto md:z-0 md:mt-8 md:border md: md:border-[var(--vc-line)] md:-none"
             }
           >
             <div className="flex flex-col gap-3 sm:items-center">
               {!hasVoted ? (
-                <p className="text-center text-sm text-gray-400">
+                <p className="text-center text-sm text-[var(--vc-muted)]">
                   {selectedClipUrls.length === picksRequired ? (
-                    <span className="text-emerald-300/95">
+                    <span className="text-[var(--vc-accent)]">
                       Усі місця заповнені — підтвердь голос
                     </span>
                   ) : (
                     <>
                       Обрано{" "}
-                      <span className="font-semibold tabular-nums text-amber-200">
+                      <span className="font-semibold tabular-nums text-[var(--vc-accent)]">
                         {selectedClipUrls.length}
                       </span>{" "}
                       з {picksRequired}
@@ -498,12 +498,12 @@ export default function ClipMonthVoting() {
                 }
                 onClick={() => void confirmVotes()}
                 className={
-                  "w-full rounded-2xl py-4 px-6 text-base font-bold text-white sm:max-w-md " +
-                  "bg-gradient-to-br from-emerald-600 to-teal-600 " +
-                  "shadow-[0_8px_32px_rgba(16,185,129,.3)] transition-all " +
-                  "hover:from-emerald-500 hover:to-teal-500 hover:shadow-[0_12px_40px_rgba(16,185,129,.4)] " +
+                  "w-full py-4 px-6 text-base font-bold text-white sm:max-w-md " +
+                  "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 " +
+                  " transition-all " +
+                  "hover:from-emerald-500 hover:to-teal-500 hover: " +
                   "active:scale-[0.99] " +
-                  "disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none " +
+                  "disabled:cursor-not-allowed disabled:opacity-40 disabled:-none " +
                   "disabled:from-gray-700 disabled:to-gray-700"
                 }
               >
@@ -514,7 +514,7 @@ export default function ClipMonthVoting() {
                     : "Підтвердити голос"}
               </button>
               {hasVoted ? (
-                <p className="text-center text-sm text-amber-200/95 px-1 leading-relaxed">
+                <p className="text-center text-sm text-[var(--vc-accent)] px-1 leading-relaxed">
                   Ти вже проголосував у цьому турі. Повторно голос надіслати неможливо.
                 </p>
               ) : null}
@@ -522,7 +522,7 @@ export default function ClipMonthVoting() {
           </div>
         </>
       ) : (
-        <p className="text-center text-gray-500 text-sm">
+        <p className="text-center text-[var(--vc-muted)] text-sm">
           Поки немає кліпів у таблиці — додай їх через форму «Додати кліп».
         </p>
       )}

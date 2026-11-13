@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { apiUrl } from "../lib/apiOrigin";
+import Footer from "../components/Footer";
 
 export default function SubmitClip() {
   const [clipUrl, setClipUrl] = useState("");
@@ -31,7 +32,7 @@ export default function SubmitClip() {
     setError("");
 
     if (!canSubmit) {
-      setError("Перевір поля та підтверди правила.");
+      setError("✕ ПЕРЕВІР ПОЛЯ ТА ПІДТВЕРДИ ПРАВИЛА.");
       return;
     }
 
@@ -48,156 +49,162 @@ export default function SubmitClip() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setMessage("✅ Кліп успішно відправлений! Дякуємо 💜");
+        setMessage("● КЛІП НАДІСЛАНО. ДЯКУЄМО!");
         setClipUrl("");
         setTitle("");
         setAuthor("");
         setNote("");
         setAgree(false);
       } else {
-        setError("❌ Помилка при відправці. Спробуйте ще раз.");
+        setError("✕ ПОМИЛКА ПРИ ВІДПРАВЦІ. СПРОБУЙ ЩЕ РАЗ.");
       }
     } catch {
-      setError("❌ Не вдалося надіслати форму. Перевірте з’єднання.");
+      setError("✕ НЕ ВДАЛОСЯ НАДІСЛАТИ. ПЕРЕВІР З’ЄДНАННЯ.");
     }
   };
 
+  const field =
+    "vc-mono w-full min-h-[52px] border bg-transparent px-4 text-sm text-[var(--vc-fg)] outline-none transition placeholder:text-[var(--vc-dim)] focus:border-[var(--vc-accent)]";
+  const label = "vc-mono mb-2 block text-xs text-[var(--vc-muted)]";
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <section className="rounded-2xl bg-[#16121f] ring-1 ring-white/10 shadow-xl overflow-hidden my-10">
-        <div className="bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 px-6 py-4">
-          <h2 className="text-white text-xl font-bold flex items-center gap-2">
-            📜 Умови відбору кліпів
-          </h2>
-          <p className="text-sm text-gray-300 mt-1">
-            Дотримайся правил нижче — і твій кліп матиме шанс потрапити в
-            добірку.
-          </p>
-        </div>
-
-        <div className="px-6 py-5 text-gray-200 grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <h3 className="font-semibold text-green-400">🟢 Дозволено</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-300">
-              <li>Україномовний контент (стрім і чат українською).</li>
-              <li>
-                Свіжі кліпи — зроблені протягом останніх <b>36 годин</b>.
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-red-400">🔴 Не приймаємо</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-300">
-              <li>Російськомовний контент.</li>
-              <li>Толерування російської мови на стрімах/колаби з російськими стрімерами</li>
-              <li>Публічна підтримка російської аудиторії/контенту.</li>
-              <li>Моменти з казино та азартними іграми/рекламою.</li>
-            </ul>
-          </div>
-
-          <p className="md:col-span-2 text-xs text-gray-400 border-t border-white/10 pt-4">
-            Надсилаючи кліп, ти підтверджуєш згоду з правилами. Порушення може
-            призвести до відхилення майбутніх заявок.
+    <div className="vc-root">
+      <section className="border-b border-[var(--vc-line)]">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-4 pb-12 pt-14 sm:px-6 sm:pt-20">
+          <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ФОРМА ] НАДІШЛИ СВІЙ МОМЕНТ</span>
+          <h1 className="vc-display m-0 text-[clamp(36px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
+            Додати <span className="text-[var(--vc-accent)]">кліп</span>
+          </h1>
+          <p className="m-0 max-w-[560px] text-lg leading-relaxed text-[#c9c9c5]">
+            Дотримайся правил, і твій кліп матиме шанс потрапити в наступну добірку на YouTube.
           </p>
         </div>
       </section>
 
-      <div className="mt-8 text-white bg-[#1a1625] rounded-2xl ring-1 ring-white/10 shadow-xl">
-        <h1 className="text-2xl font-bold px-6 pt-6">Додати кліп 🚀</h1>
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
+      <div className="mx-auto grid max-w-[1320px] gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+        <aside className="flex flex-col gap-8">
+          <h2 className="vc-display m-0 text-2xl font-black uppercase tracking-[-0.02em]">Умови відбору</h2>
+          <div className="flex flex-col">
+            <span className="vc-mono border-b border-[var(--vc-line)] pb-3 text-xs text-[var(--vc-accent)]">✓ ДОЗВОЛЕНО</span>
+            <ul className="m-0 list-none p-0">
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">Україномовний контент (стрім і чат українською).</li>
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">
+                Свіжі кліпи: зроблені протягом останніх <b>36 годин</b>.
+              </li>
+            </ul>
+          </div>
+          <div className="flex flex-col">
+            <span className="vc-mono border-b border-[var(--vc-line)] pb-3 text-xs text-[#ff8a7a]">✕ НЕ ПРИЙМАЄМО</span>
+            <ul className="m-0 list-none p-0">
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">Російськомовний контент.</li>
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">
+                Толерування російської мови на стрімах, колаби з російськими стрімерами.
+              </li>
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">Публічну підтримку російської аудиторії чи контенту.</li>
+              <li className="border-b border-[var(--vc-line)] py-3 text-[15px]">Моменти з казино, азартними іграми та їхньою рекламою.</li>
+            </ul>
+          </div>
+          <p className="m-0 text-xs text-[var(--vc-muted)]">
+            Надсилаючи кліп, ти підтверджуєш згоду з правилами. Порушення може призвести до відхилення майбутніх
+            заявок.
+          </p>
+        </aside>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 border border-[var(--vc-line)] p-5 sm:p-8">
           <div>
-            <label className="block text-sm text-gray-300 mb-1">
-              Clip URL *
+            <label htmlFor="clip-url" className={label}>
+              ПОСИЛАННЯ НА КЛІП *
             </label>
             <input
+              id="clip-url"
               type="url"
-              placeholder="https://www.twitch.tv/<channel>/clip/ або https://clips.twitch.tv/"
+              placeholder="https://www.twitch.tv/<канал>/clip/… або https://clips.twitch.tv/…"
               value={clipUrl}
               onChange={(e) => setClipUrl(e.target.value)}
-              className={`w-full p-3 rounded-lg bg-[#121016] ring-1 outline-none transition
-                ${
-                  clipUrl.length === 0
-                    ? "ring-white/10"
-                    : isTwitchClip
-                    ? "ring-emerald-500/50"
-                    : "ring-red-500/50"
-                }`}
+              className={`${field} ${
+                clipUrl.length === 0 ? "border-[var(--vc-line)]" : isTwitchClip ? "border-[var(--vc-accent)]" : "border-[#ff8a7a]"
+              }`}
               required
             />
             {clipUrl && !isTwitchClip && (
-              <p className="text-xs text-red-400 mt-1">
-                Вкажи кректний лінк на твіч-кліп.
-              </p>
+              <p className="vc-mono mt-2 text-xs text-[#ff8a7a]">✕ ВКАЖИ КОРЕКТНЕ ПОСИЛАННЯ НА TWITCH-КЛІП</p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
-                Назва кліпу *
+              <label htmlFor="clip-title" className={label}>
+                НАЗВА КЛІПУ *
               </label>
               <input
+                id="clip-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 rounded-lg bg-[#121016] ring-1 ring-white/10 outline-none"
+                className={`${field} border-[var(--vc-line)]`}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
-                Стрімер *
+              <label htmlFor="clip-author" className={label}>
+                СТРІМЕР *
               </label>
               <input
+                id="clip-author"
                 type="text"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                className="w-full p-3 rounded-lg bg-[#121016] ring-1 ring-white/10 outline-none"
+                className={`${field} border-[var(--vc-line)]`}
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-gray-300 mb-1">
-              Ваш нік / коментар
+            <label htmlFor="clip-note" className={label}>
+              ТВІЙ НІК / КОМЕНТАР
             </label>
             <input
+              id="clip-note"
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full p-3 rounded-lg bg-[#121016] ring-1 ring-white/10 outline-none"
-              placeholder="Необов'язково"
+              className={`${field} border-[var(--vc-line)]`}
+              placeholder="необов'язково"
             />
           </div>
 
-          <label className="flex items-start gap-3 text-sm text-gray-300">
+          <label className="flex cursor-pointer items-start gap-3 text-sm text-[#c9c9c5]">
             <input
               type="checkbox"
               checked={agree}
               onChange={(e) => setAgree(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent"
+              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--vc-accent)]"
             />
-            <span>
-              Підтверджую, що мій кліп відповідає правилам і може бути
-              використаний у нарізках.
-            </span>
+            <span>Підтверджую, що мій кліп відповідає правилам і може бути використаний у нарізках.</span>
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {message && <p className="text-sm text-emerald-400">{message}</p>}
+          {error && (
+            <p className="vc-mono m-0 text-[13px] text-[#ff8a7a]" role="alert">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="vc-mono m-0 text-[13px] text-[var(--vc-accent)]" role="status">
+              {message}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={!canSubmit}
-            className="w-full md:w-auto inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-5 py-3 font-semibold shadow-lg
-                       disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition"
+            className="vc-display min-h-[56px] w-full cursor-pointer bg-[var(--vc-accent)] px-8 text-[15px] font-bold uppercase text-[var(--vc-bg)] disabled:cursor-not-allowed disabled:opacity-40 sm:w-fit"
           >
-            Відправити
+            Відправити →
           </button>
         </form>
       </div>
+      <Footer />
     </div>
   );
 }

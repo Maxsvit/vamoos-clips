@@ -14,13 +14,17 @@ export default class RouteErrorBoundary extends Component {
           ? this.state.error.message
           : String(this.state.error);
       return (
-        <div className="min-h-screen bg-gray-950 text-white pt-32 px-4 max-w-2xl mx-auto">
-          <p className="text-red-400 font-semibold mb-2">
-            Помилка на сторінці (див. консоль браузера F12).
-          </p>
-          <pre className="text-xs text-gray-500 whitespace-pre-wrap break-words">
-            {msg}
-          </pre>
+        <div className="vc-root">
+          <div className="mx-auto flex max-w-[1320px] flex-col gap-5 px-4 py-24 sm:px-6">
+            <span className="vc-mono text-[13px] text-[#ff8a7a]">✕ ПОМИЛКА НА СТОРІНЦІ</span>
+            <h1 className="vc-display m-0 text-[clamp(32px,5vw,64px)] font-black uppercase leading-[0.95]">
+              Щось зламалось
+            </h1>
+            <p className="m-0 text-[var(--vc-muted)]">Онови сторінку. Деталі є в консолі браузера (F12).</p>
+            <pre className="vc-mono m-0 whitespace-pre-wrap break-words border border-[var(--vc-line)] p-4 text-xs text-[var(--vc-muted)]">
+              {msg}
+            </pre>
+          </div>
         </div>
       );
     }

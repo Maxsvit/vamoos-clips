@@ -8,7 +8,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import rateLimit from "express-rate-limit";
 import session from "express-session";
+import compression from "compression";
 import { createClient } from "@supabase/supabase-js";
+import { registerViewersChoiceRoutes } from "./viewersChoice.js";
 
 const app = express();
 
@@ -44,6 +46,7 @@ app.use(
 );
 
 app.set("trust proxy", 1);
+app.use(compression());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -828,6 +831,7 @@ app.get("/auth/twitch/callback", async (req, res) => {
       login: row.login,
       displayName: row.display_name,
       profileImageUrl: row.profile_image_url,
+      createdAt: row.created_at,
     };
     req.session.twitchAccessToken = accessToken;
 
@@ -1338,6 +1342,14 @@ app.post("/api/clip-month/vote", clipMonthVotePostLimiter, async (req, res) => {
       .status(500)
       .json({ success: false, error: "Не вдалося зберегти голос" });
   }
+});
+
+/* --- Viewers Choice (щорічне голосування глядачів) --- */
+registerViewersChoiceRoutes(app, {
+  dataDir: path.join(__dirname, "viewers-choice"),
+  getSupabase: getSupabaseVoteClient,
+  twitchClientId: TWITCH_CLIENT_ID,
+  twitchClientSecret: TWITCH_CLIENT_SECRET,
 });
 
 app.use("/api", (req, res) => {

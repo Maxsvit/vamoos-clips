@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ClipCard, { getClipSlug } from "./ClipCard";
 
 function getTwitchClipEmbedUrl(slug) {
@@ -30,16 +31,9 @@ function visiblePageNumbers(current, total, maxVisible = 5) {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
 
-export default function ClipsGrid({
-  items = [],
-  page = 1,
-  totalPages = 1,
-  maxPages = 10,
-  cappedArchive = false,
-  clipsPerPage = 9,
-  totalItems = 0,
-  onPageChange,
-}) {
+const pad2 = (n) => String(n).padStart(2, "0");
+
+export default function ClipsGrid({ items = [], page = 1, totalPages = 1, totalItems = 0, pageSize = 9, onPageChange }) {
   const [previewClip, setPreviewClip] = useState(null);
   const isEmpty = !items || items.length === 0;
 
@@ -55,9 +49,7 @@ export default function ClipsGrid({
     .filter((x) => !!x.url && /^https?:\/\//i.test(x.url));
 
   const showPager = totalPages > 1 && typeof onPageChange === "function";
-  const pageButtons = showPager
-    ? visiblePageNumbers(page, totalPages, 5)
-    : [];
+  const pageButtons = showPager ? visiblePageNumbers(page, totalPages, 5) : [];
 
   useEffect(() => {
     if (!previewClip) return;
@@ -73,14 +65,14 @@ export default function ClipsGrid({
     };
   }, [previewClip]);
 
+  const pagerBtn =
+    "vc-mono min-h-[48px] min-w-[48px] cursor-pointer border-r border-[var(--vc-line)] px-4 text-[13px] disabled:pointer-events-none disabled:opacity-30";
+
   return (
-    <section
-      className="relative py-16 bg-[#0a0014] overflow-hidden"
-      id="latest-clips"
-    >
+    <section className="mx-auto max-w-[1320px] scroll-mt-20 px-4 pb-20 pt-16 sm:px-6 sm:pt-20" id="latest-clips">
       {previewClip ? (
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-3 sm:p-6"
           role="presentation"
           onClick={() => setPreviewClip(null)}
         >
@@ -88,26 +80,23 @@ export default function ClipsGrid({
             role="dialog"
             aria-modal="true"
             aria-labelledby="home-clip-embed-dialog-title"
-            className="relative w-full max-w-4xl rounded-2xl bg-[#0e0e10] ring-2 ring-violet-500/35 shadow-2xl overflow-hidden flex flex-col max-h-[min(92vh,900px)]"
+            className="relative flex max-h-[min(92vh,900px)] w-full max-w-5xl flex-col overflow-hidden border border-[var(--vc-line)] bg-[var(--vc-bg)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-white/[0.08] shrink-0">
-              <h3
-                id="home-clip-embed-dialog-title"
-                className="text-base sm:text-lg font-bold text-white pr-2 line-clamp-2"
-              >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--vc-line)] px-4 py-3">
+              <h3 id="home-clip-embed-dialog-title" className="vc-display m-0 line-clamp-2 pr-2 text-base font-bold uppercase sm:text-lg">
                 {previewClip.title || "Кліп"}
               </h3>
               <button
                 type="button"
                 onClick={() => setPreviewClip(null)}
-                className="shrink-0 rounded-xl px-3 py-1.5 text-2xl leading-none text-gray-300 hover:bg-white/10 hover:text-white"
+                className="vc-mono min-h-[44px] shrink-0 cursor-pointer border border-[var(--vc-line)] px-3 text-[13px] text-[var(--vc-fg)] hover:border-[var(--vc-fg)]"
                 aria-label="Закрити перегляд"
               >
-                ×
+                ЗАКРИТИ ✕
               </button>
             </div>
-            <div className="relative w-full aspect-video bg-black shrink-0">
+            <div className="relative aspect-video w-full shrink-0 bg-black">
               {(() => {
                 const slug = getClipSlug(previewClip.url);
                 const src = slug ? getTwitchClipEmbedUrl(slug) : null;
@@ -124,127 +113,85 @@ export default function ClipsGrid({
                   );
                 }
                 return (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center text-gray-400 text-sm">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center text-sm text-[var(--vc-muted)]">
                     <p>Не вдалося вбудувати це посилання. Відкрий кліп на Twitch.</p>
-                    <a
-                      href={previewClip.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-violet-400 hover:text-violet-300 underline font-medium"
-                    >
-                      Відкрити на Twitch
+                    <a href={previewClip.url} target="_blank" rel="noreferrer" className="vc-mono">
+                      ВІДКРИТИ НА TWITCH ↗
                     </a>
                   </div>
                 );
               })()}
             </div>
-            <div className="px-4 py-3 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-sm shrink-0">
-              <p className="text-gray-500">
-                Стрімер: <span className="text-gray-300">{previewClip.author}</span>
-              </p>
-              <a
-                href={previewClip.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-violet-400 hover:text-violet-300 font-medium"
-              >
-                Відкрити на Twitch ↗
+            <div className="vc-mono flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[var(--vc-line)] px-4 py-3 text-[13px]">
+              <span className="text-[var(--vc-muted)]">
+                СТРІМЕР: <span className="text-[var(--vc-fg)]">{previewClip.author}</span>
+              </span>
+              <a href={previewClip.url} target="_blank" rel="noreferrer">
+                ВІДКРИТИ НА TWITCH ↗
               </a>
             </div>
           </div>
         </div>
       ) : null}
 
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/35 to-transparent"
-        aria-hidden
-      />
-      <div className="max-w-6xl mx-auto px-4 relative">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-white text-center tracking-tight">
-          Останні додані кліпи
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-6">
+        <h2 className="vc-display m-0 text-[clamp(28px,3.4vw,48px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
+          Останні кліпи
         </h2>
-        <p className="text-gray-300 text-center mt-2 max-w-xl mx-auto text-[15px] leading-relaxed">
-          Свіжі моменти з українського Twitch, які додали саме ви.
-          {totalItems > 0 ? (
-            <span className="block mt-1 text-sm text-gray-500 space-y-0.5">
-              <span className="block">
-                Усього в добірці:{" "}
-                <span className="text-gray-400 tabular-nums">
-                  {totalItems.toLocaleString("uk-UA")}
-                </span>
-                {showPager ? (
-                  <>
-                    {" "}
-                    · сторінка {page} з {totalPages}
-                  </>
-                ) : null}
-              </span> 
-            </span>
-          ) : null}
-        </p>
-
-        {isEmpty ? (
-          <div className="text-center text-gray-400 mt-10">
-            Поки що немає кліпів. Додай перший —{" "}
-            <a href="/submit" className="text-purple-400 underline">
-              надіслати
-            </a>
-            .
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 mt-10">
-              {normalized.map((clip) => (
-                <ClipCard
-                  key={clip.id}
-                  clip={clip}
-                  embedMode
-                  onOpenEmbed={() => setPreviewClip(clip)}
-                />
-              ))}
-            </div>
-
-            {showPager ? (
-              <nav
-                className="flex flex-wrap items-center justify-center gap-2 mt-12"
-                aria-label="Сторінки кліпів"
-              >
-                <button
-                  type="button"
-                  disabled={page <= 1}
-                  onClick={() => onPageChange(page - 1)}
-                  className="min-h-[44px] px-4 rounded-xl text-sm font-medium text-white bg-white/5 ring-1 ring-white/10 hover:bg-white/10 disabled:opacity-35 disabled:pointer-events-none transition"
-                >
-                  Назад
-                </button>
-                {pageButtons.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => onPageChange(p)}
-                    className={
-                      "min-w-[44px] min-h-[44px] rounded-xl text-sm font-semibold transition " +
-                      (p === page
-                        ? "bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-900/40"
-                        : "text-gray-300 bg-white/5 ring-1 ring-white/10 hover:bg-white/10")
-                    }
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  disabled={page >= totalPages}
-                  onClick={() => onPageChange(page + 1)}
-                  className="min-h-[44px] px-4 rounded-xl text-sm font-medium text-white bg-white/5 ring-1 ring-white/10 hover:bg-white/10 disabled:opacity-35 disabled:pointer-events-none transition"
-                >
-                  Далі
-                </button>
-              </nav>
-            ) : null}
-          </>
+        {totalItems > 0 && (
+          <span className="vc-mono text-[13px] text-[var(--vc-muted)]">
+            [ {totalItems.toLocaleString("uk-UA")} У ДОБІРЦІ{showPager ? ` · СТОРІНКА ${pad2(page)} / ${pad2(totalPages)}` : ""} ]
+          </span>
         )}
       </div>
+
+      {isEmpty ? (
+        <p className="m-0 border-t border-[var(--vc-line)] py-12 text-[var(--vc-muted)]">
+          Поки що немає кліпів. Додай перший:{" "}
+          <Link to="/submit" className="vc-mono">
+            НАДІСЛАТИ КЛІП →
+          </Link>
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 border-l border-t border-[var(--vc-line)] sm:grid-cols-2 lg:grid-cols-3">
+            {normalized.map((clip, i) => (
+              <ClipCard
+                key={clip.id}
+                clip={clip}
+                index={(page - 1) * pageSize + i + 1}
+                cell
+                embedMode
+                onOpenEmbed={() => setPreviewClip(clip)}
+              />
+            ))}
+          </div>
+
+          {showPager ? (
+            <nav className="mt-10 flex w-fit max-w-full flex-wrap border-l border-y border-[var(--vc-line)]" aria-label="Сторінки кліпів">
+              <button type="button" disabled={page <= 1} onClick={() => onPageChange(page - 1)} className={`${pagerBtn} text-[var(--vc-fg)] hover:bg-[#151515]`}>
+                ← НАЗАД
+              </button>
+              {pageButtons.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => onPageChange(p)}
+                  aria-current={p === page ? "page" : undefined}
+                  className={`${pagerBtn} ${
+                    p === page ? "bg-[var(--vc-accent)] font-bold text-[var(--vc-bg)]" : "text-[var(--vc-muted)] hover:bg-[#151515] hover:text-[var(--vc-fg)]"
+                  }`}
+                >
+                  {pad2(p)}
+                </button>
+              ))}
+              <button type="button" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} className={`${pagerBtn} text-[var(--vc-fg)] hover:bg-[#151515]`}>
+                ДАЛІ →
+              </button>
+            </nav>
+          ) : null}
+        </>
+      )}
     </section>
   );
 }

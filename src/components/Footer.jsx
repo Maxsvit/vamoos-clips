@@ -1,75 +1,37 @@
+import { Link } from "react-router-dom";
+import { DONATE_URL } from "./SiteHeader";
+import { SOCIALS } from "../lib/socials";
+
+
 export default function Footer() {
   return (
-    <footer className="mt-16 border-t border-white/10 bg-[#0c0a12]">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h4 className="text-white text-lg font-semibold">Vamoos Clips</h4>
-            <p className="text-sm text-gray-400">
-              Найкращі моменти з українського Twitch.
-            </p>
-          </div>
-
-          <nav className="flex items-center gap-5">
-            <a
-              href="https://www.twitch.tv/vammmosss"
-              target="_blank"
-              rel="noreferrer"
-              className="text-gray-300 hover:text-white transition"
-              aria-label="Twitch"
-              title="Мій Twitch"
-            >
-              <svg
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M4 3h16v10.5L16.5 17H13l-2.5 2.5H8v-2.5H4V3zm2 2v9h3v2h1.5L13 14h3l2-2V5H6zm8 2h2v4h-2V7zm-5 0h2v4H9V7z" />
-              </svg>
-            </a>
-
-            <a
-              href="https://t.me/vamooschannel"
-              target="_blank"
-              rel="noreferrer"
-              className="text-gray-300 hover:text-white transition"
-              aria-label="Telegram"
-              title="Наш Telegram"
-            >
-              <svg
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M9.5 13.5l-.4 4.1c.6 0 .8-.3 1.1-.6l2.6-2.5 5.4 4c1 .6 1.7.3 2-.9l3.6-16.9c.3-1.2-.4-1.7-1.4-1.4L1.6 8.7C.4 9.1.4 9.8 1.4 10.1l5.9 1.8 13.7-8.6-11.5 10.2z" />
-              </svg>
-            </a>
-
-            <a
-              href="https://www.youtube.com/@vamoosnarizky"
-              target="_blank"
-              rel="noreferrer"
-              className="text-gray-300 hover:text-white transition"
-              aria-label="YouTube"
-              title="YouTube"
-            >
-              <svg
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M23.5 6.2c-.3-1.3-1.3-2.2-2.6-2.3C18.8 3.6 12 3.6 12 3.6s-6.8 0-8.9.3C1.8 4 1 5 0.7 6.2 0.4 7.5 0.4 10 0.4 10s0 2.5.3 3.8c.3 1.3 1.1 2.2 2.4 2.3 2.1.3 8.9.3 8.9.3s6.8 0 8.9-.3c1.3-.1 2.3-1 2.6-2.3.3-1.3.3-3.8.3-3.8s0-2.5-.3-3.8zM9.8 14.4V7.6l6 3.4-6 3.4z" />
-              </svg>
-            </a>
-          </nav>
+    <footer className="border-t border-[var(--vc-line)] bg-[var(--vc-bg)] text-[var(--vc-fg)]">
+      <div className="mx-auto grid max-w-[1320px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="flex flex-col gap-4">
+          <Link
+            to="/"
+            className="vc-display text-[clamp(28px,4vw,48px)] font-black uppercase leading-none tracking-[-0.03em] text-[var(--vc-fg)] no-underline"
+          >
+            Vamoos<span className="text-[var(--vc-accent)]">/</span>Narizky
+          </Link>
+          <p className="m-0 max-w-[420px] text-[15px] text-[var(--vc-muted)]">
+            Найкращі моменти з українського Twitch: кліпи, добірки та щорічний Viewers Choice.
+          </p>
         </div>
-
-        <div className="mt-6 text-xs text-gray-500">
-          © {new Date().getFullYear()} Vamoos Clips. Всі права захищені.
-        </div>
+        <nav className="vc-mono flex flex-wrap gap-x-8 gap-y-3 self-end text-[13px]" aria-label="Соцмережі">
+          {SOCIALS.map((s) => (
+            <a key={s.label} href={s.href} target="_blank" rel="noreferrer" className="text-[var(--vc-muted)] no-underline hover:text-[var(--vc-accent)]">
+              {s.label.toUpperCase()} ↗
+            </a>
+          ))}
+          <a href={DONATE_URL} target="_blank" rel="noreferrer" className="text-[var(--vc-muted)] no-underline hover:text-[var(--vc-accent)]">
+            ПІДТРИМАТИ ↗
+          </a>
+        </nav>
+      </div>
+      <div className="vc-mono mx-auto flex max-w-[1320px] flex-wrap justify-between gap-3 border-t border-[var(--vc-line)] px-4 py-5 text-xs text-[var(--vc-dim)] sm:px-6">
+        <span>© {new Date().getFullYear()} VAMOOS NARIZKY</span>
+        <span>ЗРОБЛЕНО ДЛЯ УКРАЇНСЬКОГО TWITCH</span>
       </div>
     </footer>
   );

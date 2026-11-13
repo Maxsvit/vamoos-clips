@@ -4,31 +4,31 @@ import ClipMonthVoting from "../components/ClipMonthVoting";
 
 /** Той самий стиль, що кнопка «Кліп місяця» в наві — салатовий */
 const submitClipLinkClass =
-  "inline-flex items-center align-baseline rounded-lg px-2.5 py-1 text-xs font-bold text-white " +
-  "bg-gradient-to-br from-emerald-500 to-teal-600 " +
+  "inline-flex items-center align-baseline px-2.5 py-1 text-xs font-bold text-white " +
+  "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 " +
   "hover:from-emerald-400 hover:to-teal-500 " +
-  "border border-emerald-300/30 shadow-[0_2px_14px_rgba(16,185,129,.35)] " +
-  "transition-all duration-200 hover:shadow-[0_3px_18px_rgba(16,185,129,.45)] hover:-translate-y-px " +
+  "border border-[var(--vc-line)]  " +
+  "transition-all duration-200 hover: hover:-translate-y-px " +
   "no-underline mx-0.5";
 
 /** Суми призів у картці «Результати» — трохи яскравіше за основний текст */
 const prizeMoneyClass =
-  "text-amber-200 font-semibold tabular-nums drop-shadow-[0_0_12px_rgba(251,191,36,0.35)]";
+  "text-[var(--vc-accent)] font-semibold tabular-nums drop-";
 
 const stepBadgeClass = "from-emerald-500 to-teal-600";
 const TELEGRAM_URL = "https://t.me/vamooschannel";
 const YOUTUBE_URL = "https://www.youtube.com/@vamoosnarizky";
 
 const contestCtaBtnClass =
-  "inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold text-white no-underline " +
-  "bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 " +
-  "border border-emerald-300/30 shadow-[0_6px_22px_rgba(16,185,129,.35)] " +
-  "transition-all duration-200 hover:-translate-y-px hover:shadow-[0_9px_28px_rgba(16,185,129,.45)]";
+  "inline-flex items-center justify-center px-5 py-2.5 text-sm font-bold text-white no-underline " +
+  "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 " +
+  "border border-[var(--vc-line)]  " +
+  "transition-all duration-200 hover:-translate-y-px hover:";
 
 const contestCtaBtnGhostClass =
-  "inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-emerald-100 no-underline " +
-  "bg-white/[0.03] hover:bg-white/[0.06] border border-emerald-400/25 " +
-  "shadow-[0_6px_18px_rgba(0,0,0,.25)] transition-all duration-200 hover:-translate-y-px";
+  "inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[var(--vc-accent)] no-underline " +
+  "bg-white/[0.03] hover:bg-white/[0.06] border border-[var(--vc-line)] " +
+  " transition-all duration-200 hover:-translate-y-px";
 
 /**
  * Тур: з 1-го по останній день місяця — подача → голосування за попередній місяць
@@ -160,7 +160,7 @@ function WaitingDots() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 clip-month-status__dot"
+          className="inline-block h-1.5 w-1.5 bg-[var(--vc-accent)] clip-month-status__dot"
         />
       ))}
     </span>
@@ -175,30 +175,30 @@ function ParallelSubmissionDuringVoting({
   return (
     <div
       className={
-        "mt-5 rounded-2xl border border-emerald-400/35 bg-gradient-to-br from-emerald-950/55 to-gray-900/70 " +
-        "p-5 text-left ring-1 ring-emerald-500/25 shadow-[0_8px_32px_rgba(16,185,129,.12)]"
+        "mt-5 border border-[var(--vc-line)] bg-[var(--vc-bg)] " +
+        "p-5 text-left border border-[var(--vc-line)] "
       }
     >
-      <p className="text-emerald-300/95 text-xs font-semibold uppercase tracking-wide">
+      <p className="text-[var(--vc-accent)] text-xs font-semibold uppercase tracking-wide">
         Паралельно відкритий збір
       </p>
       <p className="text-white text-base font-semibold mt-2 leading-snug">
         Поки триває голосування за фіналістів{" "}
-        <span className="text-amber-200">{finalistsMonthGenitive}</span>, уже
+        <span className="text-[var(--vc-accent)]">{finalistsMonthGenitive}</span>, уже
         можна надсилати кліпи на конкурс{" "}
-        <span className="text-emerald-300">{newTourMonthNominative}</span>.
+        <span className="text-[var(--vc-accent)]">{newTourMonthNominative}</span>.
       </p>
-      <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+      <p className="text-[var(--vc-muted)] text-sm mt-2 leading-relaxed">
         Не треба чекати кінця голосування: окремий збір саме за новий календарний місяць туру триває.
       </p>
       <div className="mt-4">
         <Link
           to="/submit"
           className={
-            "inline-flex items-center rounded-xl px-4 py-2.5 text-sm font-bold text-white " +
-            "bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 " +
-            "border border-emerald-400/30 shadow-[0_4px_20px_rgba(16,185,129,.35)] " +
-            "transition-all hover:shadow-[0_6px_28px_rgba(16,185,129,.45)] hover:-translate-y-px no-underline"
+            "inline-flex items-center px-4 py-2.5 text-sm font-bold text-white " +
+            "bg-[var(--vc-accent)] text-[var(--vc-bg)] hover:brightness-110 " +
+            "border border-[var(--vc-line)]  " +
+            "transition-all hover: hover:-translate-y-px no-underline"
           }
         >
           Додати кліп за {newTourMonthNominative} →
@@ -217,7 +217,7 @@ function ContestStatus() {
   const wrap = (children, pulse = true) => (
     <div
       className={
-        "rounded-2xl bg-gradient-to-br from-amber-950/90 to-gray-900/95 ring-1 ring-amber-500/30 p-6 md:p-7 " +
+        " bg-[var(--vc-bg)] border border-[var(--vc-line)] p-6 md:p-7 " +
         (pulse ? "clip-month-status--pulse" : "")
       }
     >
@@ -228,17 +228,17 @@ function ContestStatus() {
   if (phase.kind === "upcoming") {
     return wrap(
       <>
-        <p className="text-amber-300/90 text-xs font-semibold uppercase tracking-wide mb-2">
+        <p className="text-[var(--vc-accent)] text-xs font-semibold uppercase tracking-wide mb-2">
           Незабаром
         </p>
         <p className="text-white text-lg font-semibold">
           Перший тур «Кліп місяця» стартує{" "}
-          <span className="text-amber-300">
+          <span className="text-[var(--vc-accent)]">
             {dayMonthGenitiveUk(schedule.submitStart)}
           </span>
           .
         </p>
-        <p className="text-gray-400 mt-2 text-sm leading-relaxed">
+        <p className="text-[var(--vc-muted)] mt-2 text-sm leading-relaxed">
           Тут з’явиться актуальний статус: збір кліпів, відбір, голосування та
           результати.
         </p>
@@ -250,21 +250,21 @@ function ContestStatus() {
   if (phase.kind === "submission") {
     return wrap(
       <>
-        <p className="text-amber-300/90 text-xs font-semibold uppercase tracking-wide mb-2">
+        <p className="text-[var(--vc-accent)] text-xs font-semibold uppercase tracking-wide mb-2">
           Зараз: збір кліпів
         </p>
         <>
           <p className="text-white text-lg font-semibold leading-snug">
             Приймаємо кліпи до{" "}
-            <span className="text-amber-300">
+            <span className="text-[var(--vc-accent)]">
               {dayMonthGenitiveUk(schedule.submitEnd, false)}
             </span>
             {" "}
             <WaitingDots />
           </p>
-          <p className="text-gray-300 mt-4 leading-relaxed">
+          <p className="text-[#c9c9c5] mt-4 leading-relaxed">
             Наразі дивимось ваші кліпи й відбираємо — зачекай{" "}
-            <span className="text-amber-200/95 font-medium">кінця місяця</span>: після{" "}
+            <span className="text-[var(--vc-accent)] font-medium">кінця місяця</span>: після{" "}
             {dayMonthGenitiveUk(schedule.submitEnd, false)} сформуємо шортлист і
             відкриємо голосування{" "}
             <span className="text-white/95">
@@ -281,17 +281,17 @@ function ContestStatus() {
   if (phase.kind === "voting") {
     return wrap(
       <>
-        <p className="text-amber-300/90 text-xs font-semibold uppercase tracking-wide mb-2">
+        <p className="text-[var(--vc-accent)] text-xs font-semibold uppercase tracking-wide mb-2">
           Зараз: голосування
         </p>
         <p className="text-white text-lg font-semibold leading-snug">
           Обери улюблений кліп серед фіналістів — до{" "}
-          <span className="text-amber-300">
+          <span className="text-[var(--vc-accent)]">
             {dayMonthGenitiveUk(schedule.voteEnd, false)}
           </span>{" "}
           <WaitingDots />
         </p>
-        <p className="text-gray-400 mt-3 text-sm">
+        <p className="text-[var(--vc-muted)] mt-3 text-sm">
           Нижче на сторінці — список фіналістів і кнопка голосу (потрібен вхід через
           Twitch). Один акаунт — один голос за тур, без повторного голосування.
         </p>
@@ -306,10 +306,10 @@ function ContestStatus() {
 
   return wrap(
     <>
-      <p className="text-gray-300 text-lg font-semibold">
+      <p className="text-[#c9c9c5] text-lg font-semibold">
         Наступний тур «Кліп місяця» — анонс на каналі
       </p>
-      <p className="text-gray-500 mt-2 text-sm">
+      <p className="text-[var(--vc-muted)] mt-2 text-sm">
         Коли відкриємо новий збір, тут знову з’явиться статус.
       </p>
     </>,
@@ -375,7 +375,7 @@ export default function ClipOfMonth() {
               href={TELEGRAM_URL}
               target="_blank"
               rel="noreferrer"
-              className="text-emerald-300/95 font-medium hover:text-emerald-200 underline underline-offset-2"
+              className="text-[var(--vc-accent)] font-medium hover:text-[var(--vc-accent)] underline underline-offset-2"
             >
               у нашому Telegram
             </a>
@@ -395,15 +395,15 @@ export default function ClipOfMonth() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <section className="pt-32 pb-12 px-4 text-center max-w-3xl mx-auto">
-        <p className="text-amber-400/90 text-sm font-semibold tracking-wide uppercase mb-2">
+    <div className="vc-root">
+      <section className="pt-16 pb-12 px-4 text-center max-w-3xl mx-auto">
+        <p className="text-[var(--vc-accent)] text-sm font-semibold tracking-wide uppercase mb-2">
           Щомісячний конкурс
         </p>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[var(--vc-fg)] vc-display uppercase tracking-[-0.03em]">
           Кліп місяця
         </h1>
-        <p className="text-gray-400 text-lg">
+        <p className="text-[var(--vc-muted)] text-lg">
           Один цикл — подача, відбір, голосування й фінал. Нижче коротко, як це
           виглядатиме.
         </p>
@@ -413,21 +413,21 @@ export default function ClipOfMonth() {
         {steps.map((s, i) => (
           <article
             key={s.title}
-            className="rounded-2xl bg-gray-900/80 ring-1 ring-amber-500/20 shadow-[0_8px_32px_rgba(0,0,0,.35)] p-6 md:p-8 h-full"
+            className=" bg-[#151515] border border-[var(--vc-line)] p-6 md:p-8 h-full"
           >
-            <div className="flex items-start  gap-4">
+            <div className="flex items-start gap-4">
               <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${stepBadgeClass} text-lg font-bold text-white shadow-lg`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center   ${stepBadgeClass} text-lg font-bold text-white `}
                 aria-hidden
               >
                 {i + 1}
               </span>
               <div className="text-left min-w-0">
                 <h2 className="text-xl font-semibold text-white">{s.title}</h2>
-                <p className="text-emerald-300/95 font-semibold text-sm mt-1 whitespace-nowrap">
+                <p className="text-[var(--vc-accent)] font-semibold text-sm mt-1 whitespace-nowrap">
                   {s.range}
                 </p>
-                <div className="text-gray-400 mt-3 leading-relaxed text-[15px] space-y-2 [&_p+p]:mt-0">
+                <div className="text-[var(--vc-muted)] mt-3 leading-relaxed text-[15px] space-y-2 [&_p+p]:mt-0">
                   {typeof s.body === "string" ? <p>{s.body}</p> : s.body}
                 </div>
               </div>
@@ -446,16 +446,16 @@ export default function ClipOfMonth() {
         )}
 
         <div className="md:col-span-2 mt-4">
-          <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-[#0f172a] via-[#0a1323] to-[#07131a] p-6 md:p-8 text-center shadow-[0_20px_70px_rgba(0,0,0,.45)]">
-            <div className="pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 right-10 h-48 w-48 rounded-full bg-teal-500/10 blur-3xl" />
-            <p className="relative inline-flex items-center rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+          <div className="relative overflow-hidden border border-[var(--vc-line)] bg-[var(--vc-bg)] p-6 md:p-8 text-center ">
+            <div className="pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 bg-[#151515] blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 right-10 h-48 w-48 bg-teal-500/10 blur-3xl" />
+            <p className="relative inline-flex items-center border border-[var(--vc-line)] bg-[#151515] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--vc-accent)]">
               Конкурсний хаб
             </p>
             <h3 className="relative mt-3 text-2xl md:text-3xl font-extrabold text-white">
               Слідкуй за оновленнями і подавай кліпи
             </h3>
-            <p className="relative mt-3 text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="relative mt-3 text-[#c9c9c5] max-w-3xl mx-auto leading-relaxed">
               Переходь на наші канали, щоб не пропускати новини конкурсу, та
               надсилай свій кліп у форму подачі.
             </p>

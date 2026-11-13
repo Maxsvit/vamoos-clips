@@ -1,11 +1,31 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
-import nasty from "../assets/img/nasty.jpg";
-import nosochek from "../assets/img/nosochek.jpg";
-import vamoos from "../assets/img/vamoos.jpg";
-import sashko from "../assets/img/sashko.jpg";
-import train from "../assets/img/train.png";
-import taras from "../assets/img/taras.jpg"
+import { SOCIALS } from "../lib/socials";
+
+const PROJECTS = [
+  {
+    tag: "САЙТ",
+    title: "Кліпи українського Twitch",
+    text: "Архів найкращих моментів, які надсилаєте ви. З них збираємо добірки для YouTube.",
+    to: "/",
+    cta: "ДИВИТИСЬ КЛІПИ",
+  },
+  {
+    tag: "ЩОРІЧНО",
+    title: "Народний Viewers Choice",
+    text: "Голосування глядачів за найкращих стрімерів року в різних номінаціях.",
+    to: "/viewers-choice",
+    cta: "ДО ГОЛОСУВАННЯ",
+  },
+  {
+    tag: "ПРОЄКТ",
+    title: "Vyklav",
+    text: "Ще один наш проєкт.",
+    href: "https://vyklav.com/",
+    cta: "VYKLAV.COM",
+  },
+];
 
 export default function About() {
   const [copied, setCopied] = useState(false);
@@ -20,150 +40,102 @@ export default function About() {
     }
   };
 
-  const team = [
-    {
-      name: "Vamoos",
-      role: "Контент-менеджер, розробник, дизайнер, адміністратор",
-      desc: "Займаюсь всім по трошку, але починав саме з ідей та контенту.",
-      image: vamoos,
-      link: "https://www.twitch.tv/vammmosss",
-    },
-    {
-      name: "Носочек Шкарпеткович",
-      role: "Помічник по всьому",
-      desc: "Цю людину можна попросити про все, що завгодно. Він завжди допоможе!",
-      image: nosochek,
-      link: "https://www.twitch.tv/nosochokshkarpetkovychuwu",
-    },
-    {
-      name: "Nasty Cringe",
-      role: "Монтажер, редактор, стрімер",
-      desc: "Монтує кліпи, допомагає з редагуванням та активно стрімить на Twitch.",
-      image: nasty,
-      link: "https://www.twitch.tv/nasty_cringe",
-    },
-    {
-      name: "Сашко",
-      role: "Монтажер, графік, стрімер",
-      desc: "Всі превю зроблені Сашком і все що ви бачите 3D то це він зробив.",
-      image: sashko,
-      link: "https://www.twitch.tv/dvisosiski",
-      artstationlink: "https://www.artstation.com/sshtskk"
-    },
-    {
-      name: "Максим Потяг",
-      role: "Шукач гарного контенту і реклами",
-      desc: "Шукає і відбирає кліпи і допомогає з вирішенням питань з рекламою.",
-      image: train,
-      link: "",
-    },
-    {
-      name: "Culfich",
-      role: "Монтажер, стрімер",
-      desc: "Монтує шортcи і тіктоки для нашого каналу та й інколи підрубає стріми",
-      image: taras,
-      link: "https://www.twitch.tv/culfich",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-950 text-white relative">
-      <section className="py-32 text-center">
-        <h1 className="text-4xl font-bold mb-4">Про нас</h1>
-        <p className="text-gray-400">
-          Наша мета — зробити зручний майданчик для обміну кліпами та переглядом
-          цікавого українського контенту.
-        </p>
+    <div className="vc-root">
+      <section className="border-b border-[var(--vc-line)]">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-4 pb-12 pt-14 sm:px-6 sm:pt-20">
+          <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ПРО НАС ] VAMOOS NARIZKY</span>
+          <h1 className="vc-display m-0 text-[clamp(36px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
+            Про <span className="text-[var(--vc-accent)]">нас</span>
+          </h1>
+          <p className="m-0 max-w-[680px] text-lg leading-relaxed text-[#c9c9c5]">
+            Ми збираємо найкращі моменти українського Twitch: нарізки, добірки та щорічне голосування глядачів. Наша
+            мета: зробити зручний майданчик для обміну кліпами й перегляду цікавого українського контенту.
+          </p>
+        </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8 max-w-6xl mx-auto">
-        {team.map((person, i) => (
-          <div
-            key={i}
-            className="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition"
-          >
-            <div className="w-24 h-24 rounded-full bg-gray-600 mx-auto mb-4">
-              <img
-                src={person.image}
-                alt={person.name}
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-            <h2 className="text-xl font-semibold">{person.name}</h2>
-            <p className="text-indigo-400">{person.role}</p>
-            <p className="text-gray-400 mt-2">{person.desc}</p>
-            <div className="flex justify-center gap-4">
-            {person.link !== "" && (
-              <a
-                href={person.link}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 text-purple-400 hover:text-purple-300 mt-3 justify-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5"
-                >
-                  <path d="M4 2L2 6v14h6v2h4l2-2h4l4-4V2H4zm16 12l-2 2h-6l-2 2v-2H6V4h14v10z" />
-                  <path d="M14 6h2v5h-2zm-4 0h2v5h-2z" />
-                </svg>
-                {person.name}
+      <section className="mx-auto max-w-[1320px] px-4 py-14 sm:px-6">
+        <h2 className="vc-display m-0 pb-6 text-[clamp(28px,3.4vw,48px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
+          Наші проєкти
+        </h2>
+        <div className="grid grid-cols-1 border-l border-t border-[var(--vc-line)] md:grid-cols-3">
+          {PROJECTS.map((p) => {
+            const cls =
+              "group flex min-h-[240px] flex-col gap-4 border-b border-r border-[var(--vc-line)] p-6 text-[var(--vc-fg)] no-underline hover:bg-[#151515]";
+            const inner = (
+              <>
+                <span className="vc-mono text-xs text-[var(--vc-accent)]">[ {p.tag} ]</span>
+                <span className="vc-display text-2xl font-black uppercase leading-tight tracking-[-0.02em]">{p.title}</span>
+                <span className="text-[15px] leading-relaxed text-[var(--vc-muted)]">{p.text}</span>
+                <span className="vc-mono mt-auto text-[13px] group-hover:text-[var(--vc-accent)]">
+                  {p.cta} {p.href ? "↗" : "→"}
+                </span>
+              </>
+            );
+            return p.href ? (
+              <a key={p.title} href={p.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                {inner}
               </a>
-            )}
-            {person.name === "Сашко" && (
-              <a
-                href={person.artstationlink}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 text-blue-300 hover:text-blue-200 mt-3 justify-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  className="w-5 h-5"
-                >
-                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 21.5c-5.238 0-9.5-4.262-9.5-9.5S6.762 2.5 12 2.5 21.5 6.762 21.5 12 17.238 21.5 12 21.5z"/>
-                  <path d="M8.5 7.5h7v9h-7v-9zm1.5 1.5v6h4V9h-4zm1.5 1.5h1v3h-1v-3z"/>
-                  <path d="M12 6.5L9.5 9.5h5L12 6.5z"/>
-                </svg>
-                Artstation
-              </a>
-            )}
-            </div>
-
-          </div>
-        ))}
+            ) : (
+              <Link key={p.title} to={p.to} className={cls}>
+                {inner}
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
-      <section className="py-20 px-8 max-w-3xl mx-auto text-center">
-        <h2 className="text-3xl font-bold mb-6">Хочеш співпрацювати?</h2>
-        <p className="text-gray-400 mb-8">
-          Якщо маєш питання або ідеї — напиши нам у зручний спосіб:
-        </p>
-        <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <a
-            href="https://t.me/vamoosmax"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-indigo-600 rounded-lg font-semibold hover:bg-indigo-700 transition"
-          >
-            📢 Telegram
-          </a>
-
-          <button
-            onClick={handleCopy}
-            className="relative px-6 py-3 bg-gray-700 rounded-lg font-semibold hover:bg-gray-800 transition"
-          >
-            ✉️ Email
-            {copied && (
-              <span className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-green-600 text-white w-full text-sm px-2 py-2 rounded-lg shadow-lg">
-                Скопійовано✅
+      <section className="mx-auto max-w-[1320px] px-4 pb-14 sm:px-6">
+        <h2 className="vc-display m-0 pb-6 text-[clamp(28px,3.4vw,48px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
+          Соцмережі
+        </h2>
+        <div className="border-t border-[var(--vc-line)]">
+          {SOCIALS.map((s) => (
+            <a
+              key={s.label}
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-[var(--vc-line)] py-5 text-[var(--vc-fg)] no-underline sm:grid-cols-[200px_minmax(0,1fr)_auto]"
+            >
+              <span className="vc-display text-[clamp(22px,2.6vw,32px)] font-black uppercase tracking-[-0.02em] group-hover:text-[var(--vc-accent)]">
+                {s.label}
               </span>
-            )}
-          </button>
+              <span className="vc-mono hidden truncate text-[13px] text-[var(--vc-muted)] sm:block">{s.handle}</span>
+              <span className="vc-mono text-[13px]">ПЕРЕЙТИ ↗</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t border-[var(--vc-line)]">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-8 px-4 py-16 sm:px-6 sm:py-20">
+          <div className="flex min-w-0 max-w-[640px] flex-col gap-5">
+            <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ КОНТАКТИ ] ПИШИ НАМ</span>
+            <h2 className="vc-display m-0 text-[clamp(28px,3.6vw,52px)] font-black uppercase leading-[1.12] tracking-[-0.035em]">
+              Хочеш співпрацювати?
+            </h2>
+            <p className="m-0 text-[17px] text-[var(--vc-muted)]">Якщо маєш питання або ідеї, напиши нам у зручний спосіб.</p>
+          </div>
+          <div className="flex flex-wrap border border-[var(--vc-line)]">
+            <a
+              href="https://t.me/vamoosmax"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="vc-display flex min-h-[64px] items-center bg-[var(--vc-accent)] px-7 text-[15px] font-bold uppercase text-[var(--vc-bg)] no-underline"
+            >
+              Telegram ↗
+            </a>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="vc-mono flex min-h-[64px] cursor-pointer items-center px-6 text-[13px] text-[var(--vc-fg)] hover:bg-[#151515]"
+              aria-live="polite"
+            >
+              {copied ? "● EMAIL СКОПІЙОВАНО" : "THEMAINVIEW@GMAIL.COM ⧉"}
+            </button>
+          </div>
         </div>
       </section>
 

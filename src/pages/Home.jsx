@@ -4,6 +4,7 @@ import ClipsGrid from "../components/ClipsGrid";
 import Footer from "../components/Footer";
 import YouTubeSection from "../components/YouTubeSection";
 import { apiUrl } from "../lib/apiOrigin";
+import { VIEWERS_CHOICE_ENABLED } from "../lib/features";
 
 const CLIPS_PAGE_SIZE = 9;
 const MAX_CLIP_PAGES = 10;
@@ -30,13 +31,6 @@ function Home() {
   const [animatedTotal, setAnimatedTotal] = useState(0);
   const countAnimRef = useRef(0);
   const countDisplayRef = useRef(0);
-
-  const linkBtnHome =
-    "px-5 py-2 rounded-2xl text-[15px] md:text-xl font-bold  text-white " +
-    "bg-gradient-to-br from-violet-500 to-fuchsia-500 " +
-    "hover:from-violet-400 hover:to-fuchsia-400 " +
-    "border border-white/10 shadow-[0_4px_20px_rgba(139,92,246,.25)] " +
-    "transition-all duration-200 hover:shadow-[0_6px_26px_rgba(139,92,246,.35)] hover:translate-y-[-1px]";
 
   useEffect(() => {
     let cancelled = false;
@@ -194,85 +188,65 @@ function Home() {
   };
 
   return (
-    <div className="bg-[#0a0014] pt-32">
-      <div className="hero-backdrop">
-        <div className="hero-aurora" aria-hidden>
-          <span className="hero-aurora__blob hero-aurora__blob--a" />
-          <span className="hero-aurora__blob hero-aurora__blob--b" />
-          <span className="hero-aurora__blob hero-aurora__blob--c" />
-        </div>
-        <div className="hero-backdrop__vignette" aria-hidden />
-        <div className="hero-backdrop__content text-white text-center max-w-3xl mx-auto font-['Montserrat'] pt-24 px-2">
-        <h1 className="hero-title-anim text-3xl md:text-5xl xl:text-6xl font-bold mb-5">
-          Найкращі Twitch кліпи <br /> українських стрімерів
-        </h1>
-       
-        <h2 className="text-[#d1d5db] text-lg md:text-xl pb-8">
-          Дивись свіжі добірки з українського Twitch та надсилай свої кліпи,{" "}
-          <br /> щоб потрапити у наступний випуск.
-        </h2>
-        <div
-          className="hero-stat-chassis mb-10 mx-auto max-w-[min(100%,320px)]"
-          aria-live="polite"
+    <div className="vc-root">
+      {VIEWERS_CHOICE_ENABLED && (
+        <NavLink
+          to="/viewers-choice"
+          className="vc-display flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-[var(--vc-accent)] px-4 py-3 text-center text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--vc-bg)] no-underline hover:brightness-110"
         >
-          <div className="hero-stat-chassis__shell">
-            <span className="hero-stat-chassis__spin" aria-hidden />
-            <div className="hero-stat-chassis__inner">
-              <div
-                className={
-                  "hero-stat-anim relative z-[1] rounded-[1.75rem] border border-white/[0.06] " +
-                  "bg-gradient-to-b from-white/[0.08] via-white/[0.025] to-transparent px-3 py-5 " +
-                  "shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55),inset_0_1px_0_0_rgba(255,255,255,0.08)]"
-                }
-              >
-                <p className="text-center text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.28em] text-violet-400/75">
-                  Надіслано вами за весь час
-                </p>
-                <div className="mt-1 h-px w-12 mx-auto rounded-full bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
-                <p className="mt-4 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0">
-                  <span
-                    className={
-                      "tabular-nums text-[2.15rem] sm:text-4xl md:text-[2.75rem] font-extrabold leading-none tracking-tight " +
-                      (loading && total === 0
-                        ? "text-gray-600"
-                        : "bg-gradient-to-br from-white via-white to-violet-200/90 bg-clip-text text-transparent drop-shadow-[0_0_28px_rgba(167,139,250,0.35)]")
-                    }
-                  >
-                    {loading && total === 0
-                      ? "…"
-                      : animatedTotal.toLocaleString("uk-UA")}
-                  </span>
-                  <span className="text-[1.05rem] sm:text-lg font-medium text-violet-200/55 pb-px">
-                    {animatedTotal > 0 || total > 0
-                      ? clipWordUk(animatedTotal > 0 ? animatedTotal : total)
-                      : "кліпів"}
-                  </span>
-                </p>
+          <span>Народний Viewers Choice ’26</span>
+          <span className="vc-mono font-bold">ГОЛОСУЙ ЗА СВОЇХ СТРІМЕРІВ →</span>
+        </NavLink>
+      )}
+
+      <section className="border-b border-[var(--vc-line)]">
+        <div className="mx-auto flex max-w-[1320px] flex-col gap-10 px-4 pb-14 pt-14 sm:px-6 sm:pt-20">
+          <span className="vc-mono text-[13px] text-[var(--vc-muted)]">[ АРХІВ ] КЛІПИ УКРАЇНСЬКОГО TWITCH</span>
+          <h1 className="vc-display m-0 text-[clamp(28px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
+            Найкращі <span className="text-[var(--vc-accent)]">кліпи</span>
+            <br />
+            українського
+            <br />
+            Twitch
+          </h1>
+          <div className="flex flex-wrap items-end justify-between gap-8">
+            <p className="m-0 max-w-[480px] text-lg leading-relaxed text-[#c9c9c5]">
+              Дивись свіжі добірки з українського Twitch і надсилай свої кліпи, щоб потрапити в наступний
+              випуск.
+            </p>
+            <div className="flex flex-wrap border border-[var(--vc-line)]" aria-live="polite">
+              <div className="flex flex-col justify-center border-r border-[var(--vc-line)] px-6 py-3.5">
+                <span className="vc-display text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums">
+                  {loading && total === 0 ? "…" : animatedTotal.toLocaleString("uk-UA")}
+                </span>
+                <span className="vc-mono mt-1.5 text-[11px] text-[var(--vc-muted)]">
+                  {(animatedTotal > 0 || total > 0
+                    ? clipWordUk(animatedTotal > 0 ? animatedTotal : total)
+                    : "кліпів"
+                  ).toUpperCase()}{" "}
+                  НАДІСЛАНО ВАМИ
+                </span>
               </div>
+              <NavLink
+                to="/submit"
+                className="vc-display flex min-h-[80px] items-center bg-[var(--vc-accent)] px-7 text-[15px] font-bold uppercase text-[var(--vc-bg)] no-underline"
+              >
+                Додати кліп →
+              </NavLink>
             </div>
           </div>
         </div>
-        </div>
-      </div>
-
-      <div className="flex justify-center pb-8">
-        <NavLink to="/submit" className={linkBtnHome}>
-          Додати кліп 🚀
-        </NavLink>
-      </div>
+      </section>
 
       {loading ? (
-        <section className="py-16 text-center text-gray-400">
-          Завантажуємо кліпи…
+        <section className="vc-mono mx-auto max-w-[1320px] px-4 py-20 text-sm text-[var(--vc-muted)] sm:px-6">
+          ЗАВАНТАЖУЄМО КЛІПИ…
         </section>
       ) : (
         <ClipsGrid
           items={items}
           page={page}
           totalPages={totalPages}
-          maxPages={MAX_CLIP_PAGES}
-          cappedArchive={fullTotalPages > MAX_CLIP_PAGES}
-          clipsPerPage={CLIPS_PAGE_SIZE}
           totalItems={total}
           onPageChange={goToPage}
         />

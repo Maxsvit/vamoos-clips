@@ -50,6 +50,10 @@ export default function ClipCard({
   /** Якщо true — клік по картці не веде на Twitch, а викликає onOpenEmbed (напр. модалка з embed) */
   embedMode = false,
   onOpenEmbed,
+  /** Номер у сітці (#01) */
+  index,
+  /** Картка в сітці з лініями: межі малює сітка (border-l/t), картка — праву й нижню */
+  cell = false,
 }) {
   const realUrl = (clip?.url ?? clip?.clipUrl ?? "").toString().trim();
   const slug = getClipSlug(realUrl);
@@ -69,16 +73,27 @@ export default function ClipCard({
     setSrc(thumbUrl || fallbackLogo);
   }, [thumbUrl, realUrl]);
 
-  const shell = large
-    ? "rounded-3xl shadow-[0_20px_56px_rgba(0,0,0,0.45)]"
-    : "rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.35)]";
-  const footerPad = large ? "p-6 md:p-8" : "p-4";
+  const shell = cell
+    ? "border-r border-b border-[var(--vc-line)]"
+    : "border border-[var(--vc-line)]";
+  const footerPad = large ? "px-1 pt-5 pb-1 md:pt-6" : "px-0.5 pt-4 pb-0.5";
   const titleCls = large
-    ? "text-white font-bold line-clamp-2 leading-tight text-xl md:text-2xl"
-    : "text-white font-semibold line-clamp-2 leading-snug";
+    ? "vc-display m-0 text-[var(--vc-fg)] font-bold uppercase line-clamp-2 leading-tight text-xl md:text-2xl tracking-[-0.01em]"
+    : "m-0 text-[var(--vc-fg)] font-bold line-clamp-2 leading-snug text-[16px]";
   const authorCls = large
-    ? "text-base md:text-lg text-gray-400 mt-2 md:mt-2.5"
-    : "text-sm text-gray-400 mt-1.5";
+    ? "vc-mono m-0 text-sm text-[var(--vc-muted)] mt-2.5 uppercase"
+    : "vc-mono m-0 text-xs text-[var(--vc-muted)] mt-2 uppercase";
+  const indexLabel =
+    typeof index === "number" ? (
+      <span className="vc-mono pointer-events-none absolute left-0 top-0 z-[1] bg-[var(--vc-bg)] px-2 py-1 text-[11px] text-[var(--vc-fg)]">
+        #{String(index).padStart(2, "0")}
+      </span>
+    ) : null;
+  const playLabel = (
+    <span className="vc-mono pointer-events-none absolute bottom-0 right-0 z-[1] bg-[var(--vc-accent)] px-2.5 py-1 text-[11px] font-bold text-[var(--vc-bg)] opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+      ▶ ДИВИТИСЬ
+    </span>
+  );
 
   const openEmbed = (e) => {
     if (embedMode && typeof onOpenEmbed === "function") {
@@ -88,10 +103,8 @@ export default function ClipCard({
   };
 
   const embedShellClass =
-    "group block overflow-hidden bg-[#100818] ring-1 ring-white/[0.07] " +
-    "hover:ring-violet-500/40 hover:shadow-[0_16px_48px_rgba(88,28,135,0.2)] transition-all duration-300 " +
-    (large ? "hover:-translate-y-1" : "hover:-translate-y-0.5") +
-    " " +
+    "group block bg-[var(--vc-bg)] p-4 text-[var(--vc-fg)] no-underline transition-colors duration-200 hover:bg-[#151515] " +
+    (large ? "md:p-5 " : "") +
     shell;
 
   if (!realUrl || !isHttp(realUrl)) {
@@ -116,21 +129,21 @@ export default function ClipCard({
       <Tag
         {...props}
         className={
-          "group block overflow-hidden bg-[#100818] ring-1 ring-white/[0.07] opacity-80 " +
+          "group block bg-[var(--vc-bg)] p-4 text-[var(--vc-fg)] no-underline opacity-80 " +
           shell +
           (useEmbed ? " cursor-pointer" : "")
         }
       >
-        <div className="relative aspect-video overflow-hidden bg-black/40 flex items-center justify-center">
+        <div className="relative aspect-video overflow-hidden bg-[#151515] flex items-center justify-center">
           <img
             src={fallbackLogo}
             alt=""
             className="w-full h-full object-cover opacity-50"
           />
         </div>
-        <div className={`${footerPad} border-t border-white/[0.06]`}>
+        <div className={`${footerPad} `}>
           <h3 className={titleCls}>{clip.title}</h3>
-          <p className={authorCls}>Стример: {clip.author}</p>
+          <p className={authorCls}>Стрімер: {clip.author}</p>
         </div>
       </Tag>
     );
@@ -151,13 +164,15 @@ export default function ClipCard({
         aria-label={`Переглянути кліп: ${clip.title || "кліп"}`}
         className={embedShellClass + " cursor-pointer"}
       >
-        <div className="relative aspect-video overflow-hidden bg-black/30">
+        <div className="relative aspect-video overflow-hidden bg-[#151515]">
+          {indexLabel}
+          {playLabel}
           {!failed && src ? (
             <img
               key={src}
               src={src}
               alt={clip.title}
-              className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
               loading="lazy"
               decoding="async"
@@ -181,7 +196,7 @@ export default function ClipCard({
           {failed ? (
             <div
               className={
-                "absolute inset-0 flex items-center justify-center bg-black/50 text-gray-300 px-3 text-center " +
+                "vc-mono absolute inset-0 flex items-center justify-center bg-[#151515] text-[var(--vc-muted)] px-3 text-center uppercase " +
                 (large ? "text-base md:text-lg" : "text-sm")
               }
             >
@@ -190,9 +205,9 @@ export default function ClipCard({
           ) : null}
         </div>
 
-        <div className={`${footerPad} border-t border-white/[0.06]`}>
+        <div className={`${footerPad} `}>
           <h3 className={titleCls}>{clip.title}</h3>
-          <p className={authorCls}>Стример: {clip.author}</p>
+          <p className={authorCls}>Стрімер: {clip.author}</p>
         </div>
       </div>
     );
@@ -205,13 +220,15 @@ export default function ClipCard({
       rel="noreferrer"
       className={embedShellClass}
     >
-      <div className="relative aspect-video overflow-hidden bg-black/30">
+      <div className="relative aspect-video overflow-hidden bg-[#151515]">
+          {indexLabel}
+          {playLabel}
         {!failed && src ? (
           <img
             key={src}
             src={src}
             alt={clip.title}
-            className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
             loading="lazy"
             decoding="async"
@@ -235,7 +252,7 @@ export default function ClipCard({
         {failed ? (
           <div
             className={
-              "absolute inset-0 flex items-center justify-center bg-black/50 text-gray-300 px-3 text-center " +
+              "vc-mono absolute inset-0 flex items-center justify-center bg-[#151515] text-[var(--vc-muted)] px-3 text-center uppercase " +
               (large ? "text-base md:text-lg" : "text-sm")
             }
           >
@@ -244,7 +261,7 @@ export default function ClipCard({
         ) : null}
       </div>
 
-      <div className={`${footerPad} border-t border-white/[0.06]`}>
+      <div className={`${footerPad} `}>
         <h3 className={titleCls}>{clip.title}</h3>
         <p className={authorCls}>Стрімер: {clip.author}</p>
       </div>
