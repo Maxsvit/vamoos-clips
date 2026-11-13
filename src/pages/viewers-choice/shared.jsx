@@ -57,3 +57,40 @@ export function VcState({ title, text, children }) {
     </div>
   );
 }
+
+/** Плашка для адмінів, поки глядачі бачать лише «Скоро». */
+export function SoonPreviewBanner() {
+  return (
+    <div className="vc-mono border-b border-[var(--vc-line)] bg-[#1d1a0a] px-4 py-3 text-center text-[13px] text-[#ffe28a]">
+      ПРЕВ’Ю ДЛЯ АДМІНІВ: ГЛЯДАЧІ ЗАРАЗ БАЧАТЬ «СКОРО». ЩОБ ВІДКРИТИ ГОЛОСУВАННЯ, ПОСТАВТЕ VC_PHASE=voting
+    </div>
+  );
+}
+
+/** Тизер «Скоро» для глядачів до старту голосування. */
+export function VcSoon() {
+  return (
+    <div className="vc-root">
+      <Marquee items={["VIEWERS CHOICE 2026", "СКОРО", "НАРОДНЕ ГОЛОСУВАННЯ ЗА СТРІМЕРІВ РОКУ", "СКОРО"]} />
+      <VcHeader />
+      <section className="mx-auto flex max-w-[1320px] flex-col gap-10 px-4 pb-20 pt-16 sm:px-6 sm:pt-20">
+        <span className="vc-mono text-[13px] text-[var(--vc-muted)]">[ ВИПУСК 02 ] ЩОРІЧНА ЦЕРЕМОНІЯ КАНАЛУ</span>
+        <h1 className="vc-display m-0 text-[clamp(40px,8.6vw,124px)] font-black uppercase leading-[1.12] tracking-[-0.05em]">
+          <span className="mb-[0.12em] block text-[0.42em] leading-none tracking-[-0.03em]">Народний</span>
+          Viewers
+          <br />
+          <span className="text-[var(--vc-accent)]">Choice</span> 26
+        </h1>
+        <div className="flex flex-wrap items-end justify-between gap-8">
+          <p className="m-0 max-w-[520px] text-lg leading-relaxed text-[#c9c9c5]">
+            Голосування за найкращих стрімерів року стартує зовсім скоро. Слідкуй за анонсами на стримі та в
+            наших соцмережах, щоб не пропустити старт.
+          </p>
+          <div className="vc-display flex min-h-[72px] items-center border border-[var(--vc-line)] px-7 text-[15px] font-bold uppercase">
+            Скоро <span className="ml-2 text-[var(--vc-accent)]">●</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

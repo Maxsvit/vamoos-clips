@@ -5,6 +5,8 @@ import Footer from "../components/Footer";
 import YouTubeSection from "../components/YouTubeSection";
 import { apiUrl } from "../lib/apiOrigin";
 import { VIEWERS_CHOICE_ENABLED } from "../lib/features";
+import { useVcVisible } from "../lib/vcStatus";
+import { useAuth } from "../context/AuthContext";
 
 const CLIPS_PAGE_SIZE = 9;
 const MAX_CLIP_PAGES = 10;
@@ -20,6 +22,8 @@ function clipWordUk(n) {
 
 function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const vc = useVcVisible(user?.id ? String(user.id) : "");
   const rawPage = Math.max(
     1,
     parseInt(searchParams.get("clipsPage") || "1", 10) || 1
@@ -189,7 +193,7 @@ function Home() {
 
   return (
     <div className="vc-root">
-      {VIEWERS_CHOICE_ENABLED && (
+      {VIEWERS_CHOICE_ENABLED && vc.visible && (
         <NavLink
           to="/viewers-choice"
           className="vc-display flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-[var(--vc-accent)] px-4 py-3 text-center text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--vc-bg)] no-underline hover:brightness-110"

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { apiUrl } from "../../lib/apiOrigin";
 import { useAuth } from "../../context/AuthContext";
-import { Avatar, Marquee, TwitchLoginButton, VcHeader, VcState } from "./shared";
+import { Avatar, Marquee, TwitchLoginButton, VcHeader, VcState, SoonPreviewBanner, VcSoon } from "./shared";
 import { formatDeadline, pad2, useCountdown, useVcEvent } from "./vcData";
 import AddStreamer from "./AddStreamer";
 
@@ -71,6 +71,10 @@ export default function ViewersChoiceVote() {
       </Shell>
     );
   }
+  if (data.event.phase === "soon") {
+    if (!data.me.isAdmin) return <VcSoon />;
+    return <Ballot data={data} onReload={reload} preview />;
+  }
   if (data.event.phase !== "voting") {
     return (
       <Shell>
@@ -108,7 +112,7 @@ function Shell({ children, deadline }) {
   );
 }
 
-function Ballot({ data, onReload }) {
+function Ballot({ data, onReload, preview = false }) {
   const { user, login } = useAuth();
   const { event, categories } = data;
   const total = categories.length;
@@ -234,6 +238,7 @@ function Ballot({ data, onReload }) {
 
   return (
     <Shell deadline={event.votingDeadline}>
+      {preview && <SoonPreviewBanner />}
       <div className="border-b border-[var(--vc-line)]">
         <div className="vc-mono mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-[13px] text-[var(--vc-muted)] sm:px-6">
           <span>

@@ -8,7 +8,8 @@
  *
  * Змінні .env (усі необов'язкові):
  *   VC_EVENT_FILE            — інший файл конфігу (за замовчуванням 2026.json)
- *   VC_PHASE                 — перекриває phase з конфігу: voting | closed | results
+ *   VC_PHASE                 — перекриває phase з конфігу: soon | voting | closed | results
+ *                              soon — для глядачів лише тизер «Скоро», адміни бачать усе
  *   VC_ADMIN_LOGINS          — Twitch-логіни через кому: адмінка й результати до церемонії
  *   VC_MIN_ACCOUNT_AGE_DAYS  — мінімальний вік Twitch-акаунта для голосу (за замовчуванням 14)
  *   VC_COLLECT_UK_STREAMS    — "0" вимикає автозбір українськомовних стрімів (за замовчуванням увімкнено)
@@ -21,7 +22,7 @@ import path from "path";
 import fetch from "node-fetch";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
-const PHASES = new Set(["voting", "closed", "results"]);
+const PHASES = new Set(["soon", "voting", "closed", "results"]);
 const PROFILE_TTL = 12 * 60 * 60 * 1000;
 const EVENT_TTL = 30 * 1000;
 const BOARD_TTL = 30 * 1000;
@@ -684,10 +685,34 @@ export function registerViewersChoiceRoutes(app, opts) {
     message: { success: false, error: "Забагато спроб. Спробуй трохи пізніше." },
   });
 
+  /** Легкий запит для шапки й головної: чи показувати посилання на Viewers Choice. */
+  app.get("/api/vc/status", async (req, res) => {
+    try {
+      const event = await loadEvent();
+      res.set("Cache-Control", "private, no-store");
+      res.json({ success: true, phase: effectivePhase(event), isAdmin: isAdmin(req.session) });
+    } catch (e) {
+      console.error("[vc] status:", shortErr(e));
+      res.json({ success: false, phase: "soon", isAdmin: false });
+    }
+  });
+
   app.get("/api/vc/event", async (req, res) => {
     try {
       const event = await loadEvent();
       const phase = effectivePhase(event);
+
+      /* «Скоро»: глядачам не показуємо ні номінантів, ні категорій. Адміни бачать усе (прев'ю). */
+      if (phase === "soon" && !isAdmin(req.session)) {
+        res.set("Cache-Control", "private, no-store");
+        return res.json({
+          success: true,
+          event: { id: event.eventId, title: event.title, phase, votingDeadline: null, minAccountAgeDays, writeIns: { enabled: false } },
+          categories: [],
+          me: { loggedIn: !!req.session?.twitchUser, isAdmin: false, ballot: null },
+        });
+      }
+
       const board = await getBoard(event);
       const tu = req.session?.twitchUser;
       const uid = tu ? String(tu.id) : "";

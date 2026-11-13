@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Avatar, Marquee, VcHeader, VcState } from "./shared";
+import { Avatar, Marquee, VcHeader, VcState, SoonPreviewBanner, VcSoon } from "./shared";
 import { formatDeadline, pad2, useCountdown, useVcEvent } from "./vcData";
 
 /** Лише два етапи: голосування, а одразу після нього — оголошення переможців. */
@@ -30,10 +30,13 @@ export default function ViewersChoiceHome() {
         ? ["ГОЛОСУВАННЯ ЗАВЕРШЕНО", "VIEWERS CHOICE 2026", "ЧЕКАЙТЕ ЦЕРЕМОНІЮ НА СТРИМІ"]
         : ["VIEWERS CHOICE 2026", "ГОЛОСУВАННЯ ТРИВАЄ", deadline ? `ДО ${deadline.toUpperCase()}` : "", "ОДИН ГОЛОС У КОЖНІЙ КАТЕГОРІЇ"].filter(Boolean);
 
+  if (event?.phase === "soon" && !data?.me?.isAdmin) return <VcSoon />;
+
   return (
     <div className="vc-root">
       <Marquee items={marquee} />
       <VcHeader isAdmin={!!data?.me?.isAdmin} />
+      {event?.phase === "soon" && <SoonPreviewBanner />}
 
       {loading && <VcState title="Завантаження…" />}
       {error && <VcState title="Щось пішло не так" text={error} />}

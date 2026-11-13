@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CLIP_OF_MONTH_ENABLED, VIEWERS_CHOICE_ENABLED } from "../lib/features";
+import { useVcVisible } from "../lib/vcStatus";
 
 export const DONATE_URL = "https://send.monobank.ua/jar/2a8TQ3Q4UJ";
 
@@ -29,6 +30,8 @@ export function TwitchLoginButton({ onClick, accent = false }) {
 /** Шапка сайту: однакова на всіх сторінках. */
 export default function SiteHeader({ isAdmin = false, showLogin = false }) {
   const { user, loading, login, logout } = useAuth();
+  const vc = useVcVisible(user?.id ? String(user.id) : "");
+  const showAdmin = isAdmin || vc.isAdmin;
   const [open, setOpen] = useState(false);
 
   const link = ({ isActive }) =>
@@ -66,14 +69,14 @@ export default function SiteHeader({ isAdmin = false, showLogin = false }) {
           {CLIP_OF_MONTH_ENABLED && (
             <NavLink to="/clip-of-month" className={link} onClick={close}>КЛІП МІСЯЦЯ</NavLink>
           )}
-          {VIEWERS_CHOICE_ENABLED && (
+          {VIEWERS_CHOICE_ENABLED && vc.visible && (
             <NavLink to="/viewers-choice" className={link} onClick={close}>VIEWERS CHOICE ’26</NavLink>
           )}
           <NavLink to="/about" className={link} onClick={close}>ПРО НАС</NavLink>
           <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className="text-[var(--vc-muted)] no-underline hover:text-[var(--vc-fg)]">
             ПІДТРИМАТИ ↗
           </a>
-          {isAdmin && (
+          {showAdmin && (
             <NavLink to="/viewers-choice/admin" className={link} onClick={close}>АДМІНКА</NavLink>
           )}
 
