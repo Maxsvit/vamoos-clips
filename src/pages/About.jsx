@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import { SOCIALS } from "../lib/socials";
+import { useVcVisible } from "../lib/vcStatus";
+import { useAuth } from "../context/AuthContext";
 
 const PROJECTS = [
   {
@@ -17,6 +19,7 @@ const PROJECTS = [
     text: "Голосування глядачів за найкращих стрімерів року в різних номінаціях.",
     to: "/viewers-choice",
     cta: "ДО ГОЛОСУВАННЯ",
+    viewersChoice: true,
   },
   {
     tag: "ПРОЄКТ",
@@ -29,6 +32,10 @@ const PROJECTS = [
 
 export default function About() {
   const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
+  const vc = useVcVisible(user?.id ? String(user.id) : "");
+  /* Поки Viewers Choice у режимі «Скоро», картку бачать лише адміни. */
+  const projects = PROJECTS.filter((p) => !p.viewersChoice || vc.visible);
 
   const handleCopy = async () => {
     try {
@@ -59,8 +66,12 @@ export default function About() {
         <h2 className="vc-display m-0 pb-6 text-[clamp(28px,3.4vw,48px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
           Наші проєкти
         </h2>
-        <div className="grid grid-cols-1 border-l border-t border-[var(--vc-line)] md:grid-cols-3">
-          {PROJECTS.map((p) => {
+        <div
+          className={`grid grid-cols-1 border-l border-t border-[var(--vc-line)] ${
+            projects.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"
+          }`}
+        >
+          {projects.map((p) => {
             const cls =
               "group flex min-h-[240px] flex-col gap-4 border-b border-r border-[var(--vc-line)] p-6 text-[var(--vc-fg)] no-underline hover:bg-[#151515]";
             const inner = (
