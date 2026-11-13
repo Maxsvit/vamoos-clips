@@ -12,7 +12,9 @@
  *   VC_ADMIN_LOGINS          — Twitch-логіни через кому: адмінка й результати до церемонії
  *   VC_MIN_ACCOUNT_AGE_DAYS  — мінімальний вік Twitch-акаунта для голосу (за замовчуванням 14)
  *   VC_COLLECT_UK_STREAMS    — "0" вимикає автозбір українськомовних стрімів (за замовчуванням увімкнено)
- *   VC_COLLECT_MINUTES       — як часто збирати (за замовчуванням 20 хв)
+ *   VC_COLLECT_MINUTES       — як часто збирати (за замовчуванням 60 хв)
+ *   VC_MIN_AVG_VIEWERS       — мінімум середніх глядачів (за замовчуванням 10): менші канали,
+ *                              яких додали глядачі, з'являються лише після схвалення адміном
  */
 import fs from "fs/promises";
 import path from "path";
@@ -66,6 +68,12 @@ export function registerViewersChoiceRoutes(app, opts) {
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean)
   );
+  /** Мінімум середніх глядачів: менші канали з автозбору не пропонуються, а додані глядачами йдуть на перевірку. */
+  const minAvgViewers = Math.max(0, parseInt(String(process.env.VC_MIN_AVG_VIEWERS ?? "10"), 10) || 0);
+  /** Чи є в базі нові колонки (viewers_sum, needs_review). Якщо SQL ще не виконано — працюємо без них. */
+  const schema = { seenAvg: true, reviewFlag: true };
+  const missingColumn = (e, col) => String(e?.message || e || "").includes(col);
+
   const minAccountAgeDays = Math.max(
     0,
     parseInt(String(process.env.VC_MIN_ACCOUNT_AGE_DAYS ?? "14"), 10) || 0
@@ -288,7 +296,7 @@ export function registerViewersChoiceRoutes(app, opts) {
         if (error) throw error;
       } else {
         const d = await fileStore.read(eventId);
-        d.ballots[uid] = { login, picks, updatedAt };
+        d.ballots[uid] = { login, picks, createdAt: d.ballots[uid]?.createdAt || updatedAt, updatedAt };
         await fileStore.write(eventId, d);
       }
       return { picks, updatedAt };
@@ -302,7 +310,7 @@ export function registerViewersChoiceRoutes(app, opts) {
         for (let from = 0; ; from += 1000) {
           const { data, error } = await sb
             .from("vc_ballots")
-            .select("twitch_login, picks, updated_at")
+            .select("twitch_login, picks, created_at, updated_at")
             .eq("event_id", eventId)
             .order("updated_at", { ascending: true })
             .range(from, from + 999);
@@ -310,11 +318,17 @@ export function registerViewersChoiceRoutes(app, opts) {
           rows.push(...(data || []));
           if (!data || data.length < 1000) break;
         }
-        return rows.map((r) => ({ login: r.twitch_login || "", picks: r.picks || {}, updatedAt: r.updated_at }));
+        return rows.map((r) => ({
+          login: r.twitch_login || "",
+          picks: r.picks || {},
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+        }));
       }
       return Object.values((await fileStore.read(eventId)).ballots).map((b) => ({
         login: b.login || "",
         picks: b.picks || {},
+        createdAt: b.createdAt || b.updatedAt,
         updatedAt: b.updatedAt,
       }));
     },
@@ -324,12 +338,18 @@ export function registerViewersChoiceRoutes(app, opts) {
       const sb = getSupabase();
       if (sb) {
         const rows = [];
+        const cols = "category_id, nominee_login, nominee_language, nominated_by, nominated_by_login";
         for (let from = 0; ; from += 1000) {
-          const { data, error } = await sb
+          let { data, error } = await sb
             .from("vc_nominations")
-            .select("category_id, nominee_login, nominee_language, nominated_by, nominated_by_login")
+            .select(schema.reviewFlag ? `${cols}, needs_review` : cols)
             .eq("event_id", eventId)
             .range(from, from + 999);
+          if (error && schema.reviewFlag && missingColumn(error, "needs_review")) {
+            schema.reviewFlag = false;
+            console.error("[vc] немає колонки needs_review — виконай server/supabase/viewers_choice.sql");
+            ({ data, error } = await sb.from("vc_nominations").select(cols).eq("event_id", eventId).range(from, from + 999));
+          }
           if (error) throw error;
           rows.push(...(data || []));
           if (!data || data.length < 1000) break;
@@ -340,6 +360,7 @@ export function registerViewersChoiceRoutes(app, opts) {
           language: r.nominee_language,
           by: r.nominated_by,
           byLogin: r.nominated_by_login,
+          needsReview: !!r.needs_review,
         }));
       }
       return (await fileStore.read(eventId)).nominations;
@@ -348,17 +369,22 @@ export function registerViewersChoiceRoutes(app, opts) {
     async addNomination(eventId, n) {
       const sb = getSupabase();
       if (sb) {
-        const { error } = await sb.from("vc_nominations").upsert(
-          {
-            event_id: eventId,
-            category_id: n.categoryId,
-            nominee_login: n.login,
-            nominee_language: n.language,
-            nominated_by: n.by,
-            nominated_by_login: n.byLogin,
-          },
-          { onConflict: "event_id,category_id,nominee_login,nominated_by", ignoreDuplicates: true }
-        );
+        const row = {
+          event_id: eventId,
+          category_id: n.categoryId,
+          nominee_login: n.login,
+          nominee_language: n.language,
+          nominated_by: n.by,
+          nominated_by_login: n.byLogin,
+        };
+        const opts = { onConflict: "event_id,category_id,nominee_login,nominated_by", ignoreDuplicates: true };
+        let { error } = await sb
+          .from("vc_nominations")
+          .upsert(schema.reviewFlag ? { ...row, needs_review: !!n.needsReview } : row, opts);
+        if (error && schema.reviewFlag && missingColumn(error, "needs_review")) {
+          schema.reviewFlag = false;
+          ({ error } = await sb.from("vc_nominations").upsert(row, opts));
+        }
         if (error) throw error;
         return;
       }
@@ -427,11 +453,21 @@ export function registerViewersChoiceRoutes(app, opts) {
       if (sb) {
         const rows = [];
         for (let from = 0; ; from += 1000) {
-          const { data, error } = await sb
+          const cols = "login, user_id, display_name, games, sightings, max_viewers, first_seen, last_seen";
+          let { data, error } = await sb
             .from("vc_seen_streamers")
-            .select("login, user_id, display_name, games, sightings, max_viewers, first_seen, last_seen")
+            .select(schema.seenAvg ? `${cols}, viewers_sum, viewer_samples` : cols)
             .order("sightings", { ascending: false })
             .range(from, from + 999);
+          if (error && schema.seenAvg && missingColumn(error, "viewers_sum")) {
+            schema.seenAvg = false;
+            console.error("[vc] немає колонки viewers_sum — виконай server/supabase/viewers_choice.sql");
+            ({ data, error } = await sb
+              .from("vc_seen_streamers")
+              .select(cols)
+              .order("sightings", { ascending: false })
+              .range(from, from + 999));
+          }
           if (error) throw error;
           rows.push(...(data || []));
           if (!data || data.length < 1000) break;
@@ -469,10 +505,15 @@ export function registerViewersChoiceRoutes(app, opts) {
       if (sb) {
         const logins = [...byLogin.keys()];
         for (let i = 0; i < logins.length; i += 200) {
-          const { data, error } = await sb
+          const cols = "login, games, sightings, max_viewers, first_seen";
+          let { data, error } = await sb
             .from("vc_seen_streamers")
-            .select("login, games, sightings, max_viewers, first_seen")
+            .select(schema.seenAvg ? `${cols}, viewers_sum, viewer_samples` : cols)
             .in("login", logins.slice(i, i + 200));
+          if (error && schema.seenAvg && missingColumn(error, "viewers_sum")) {
+            schema.seenAvg = false;
+            ({ data, error } = await sb.from("vc_seen_streamers").select(cols).in("login", logins.slice(i, i + 200)));
+          }
           if (error) throw error;
           for (const r of data || []) existing.set(r.login, r);
         }
@@ -491,12 +532,21 @@ export function registerViewersChoiceRoutes(app, opts) {
           max_viewers: Math.max(e?.max_viewers || 0, c.viewers),
           first_seen: e?.first_seen || now,
           last_seen: now,
+          ...(schema.seenAvg || !sb
+            ? { viewers_sum: (e?.viewers_sum || 0) + c.viewers, viewer_samples: (e?.viewer_samples || 0) + 1 }
+            : {}),
         };
       });
 
       if (sb) {
         for (let i = 0; i < rows.length; i += 500) {
-          const { error } = await sb.from("vc_seen_streamers").upsert(rows.slice(i, i + 500), { onConflict: "login" });
+          let chunk = rows.slice(i, i + 500);
+          let { error } = await sb.from("vc_seen_streamers").upsert(chunk, { onConflict: "login" });
+          if (error && missingColumn(error, "viewers_sum")) {
+            schema.seenAvg = false;
+            chunk = chunk.map(({ viewers_sum, viewer_samples, ...r }) => (void viewers_sum, void viewer_samples, r));
+            ({ error } = await sb.from("vc_seen_streamers").upsert(chunk, { onConflict: "login" }));
+          }
           if (error) throw error;
         }
       } else {
@@ -539,9 +589,10 @@ export function registerViewersChoiceRoutes(app, opts) {
       const writeIns = new Map(); // login -> { by:Set, language }
       for (const n of noms) {
         if (n.categoryId !== c.id) continue;
-        const w = writeIns.get(n.login) || { by: new Set(), language: n.language || null };
+        const w = writeIns.get(n.login) || { by: new Set(), language: n.language || null, needsReview: false };
         w.by.add(String(n.by));
         if (n.language) w.language = n.language;
+        if (n.needsReview) w.needsReview = true;
         writeIns.set(n.login, w);
       }
       const statusOf = (login) => overrides[`${c.id}|${login}`] || null;
@@ -562,8 +613,15 @@ export function registerViewersChoiceRoutes(app, opts) {
         const st = statusOf(login);
         if (st === "hidden") continue;
         const langOk = !w.language || languages.includes(w.language);
-        const entry = { login, source: "viewers", count: w.by.size, language: w.language, by: w.by };
-        if (st === "approved" || (langOk && w.by.size >= threshold)) visible.push(entry);
+        const entry = {
+          login,
+          source: "viewers",
+          count: w.by.size,
+          language: w.language,
+          needsReview: !!w.needsReview,
+          by: w.by,
+        };
+        if (st === "approved" || (langOk && !w.needsReview && w.by.size >= threshold)) visible.push(entry);
         else pending.push(entry);
       }
       const hidden = new Set(
@@ -663,6 +721,7 @@ export function registerViewersChoiceRoutes(app, opts) {
             enabled: event.writeIns.enabled,
             threshold: event.writeIns.threshold,
             maxPerUserPerCategory: event.writeIns.maxPerUserPerCategory,
+            minAvgViewers,
           },
         },
         categories: board.categories.map((c) => ({
@@ -774,11 +833,14 @@ export function registerViewersChoiceRoutes(app, opts) {
         return res.status(404).json({ success: false, error: `Каналу «${login}» на Twitch не знайдено` });
       }
       const language = (await channelLanguage(prof.id)) || null;
+      const avg = await seenAverage(login);
+      const small = minAvgViewers > 0 && (avg === null || avg < minAvgViewers);
 
       await store.addNomination(event.eventId, {
         categoryId: cat.id,
         login,
         language,
+        needsReview: small,
         by: uid,
         byLogin: String(tu.login || "").slice(0, 128),
       });
@@ -791,7 +853,9 @@ export function registerViewersChoiceRoutes(app, opts) {
       const langOk = !language || event.writeIns.languages.includes(language);
       res.json({
         success: true,
-        status: isVisible ? "visible" : langOk ? "needs_more" : "review",
+        status: isVisible ? "visible" : !langOk || small ? "review" : "needs_more",
+        reason: !langOk ? "language" : small ? "small" : null,
+        avgViewers: avg,
         count,
         threshold: event.writeIns.threshold,
         nominee: { login, displayName: prof.displayName, avatarUrl: prof.avatarUrl },
@@ -920,6 +984,7 @@ export function registerViewersChoiceRoutes(app, opts) {
         source: n.source,
         count: n.count || 0,
         language: n.language || null,
+        needsReview: !!n.needsReview,
         status: c.statusOf(n.login),
         visible,
       });
@@ -985,7 +1050,14 @@ export function registerViewersChoiceRoutes(app, opts) {
       }
       res.json({
         success: true,
-        collector: { enabled: collectorEnabled, lastRun: collectorState.lastRun, lastCount: collectorState.lastCount },
+        minAvgViewers,
+        hasAverages: schema.seenAvg,
+        collector: {
+          enabled: collectorEnabled,
+          everyMinutes: collectorMinutes,
+          lastRun: collectorState.lastRun,
+          lastCount: collectorState.lastCount,
+        },
         categories: event.categories.map((c) => ({ id: c.id, title: c.title, suggestGames: c.suggestGames })),
         streamers: seen.map((s) => ({
           login: s.login,
@@ -994,6 +1066,7 @@ export function registerViewersChoiceRoutes(app, opts) {
           games: s.games || [],
           sightings: s.sightings || 0,
           maxViewers: s.max_viewers || 0,
+          avgViewers: avgOf(s),
           lastSeen: s.last_seen,
           inCategories: inCats.get(s.login) || [],
         })),
@@ -1001,6 +1074,48 @@ export function registerViewersChoiceRoutes(app, opts) {
     } catch (e) {
       console.error("[vc] admin seen:", shortErr(e));
       res.status(500).json({ success: false, error: "Помилка сервера" });
+    }
+  });
+
+  /** Живий лічильник для адмінки: скільки людей проголосувало й коли. */
+  app.get("/api/vc/admin/stats", requireAdmin, async (_req, res) => {
+    try {
+      const event = await loadEvent();
+      const rows = await store.allBallots(event.eventId);
+      const now = Date.now();
+      const HOUR = 3600 * 1000;
+      const hourly = Array.from({ length: 24 }, () => 0);
+      let lastHour = 0;
+      let last24h = 0;
+      let changed = 0;
+      const perCategory = Object.fromEntries(event.categories.map((c) => [c.id, 0]));
+      for (const r of rows) {
+        const t = Date.parse(r.createdAt || r.updatedAt || "");
+        if (!Number.isNaN(t)) {
+          const ago = now - t;
+          if (ago < HOUR) lastHour++;
+          if (ago < 24 * HOUR) {
+            last24h++;
+            hourly[23 - Math.floor(ago / HOUR)]++;
+          }
+        }
+        if (r.createdAt && r.updatedAt && r.updatedAt !== r.createdAt) changed++;
+        for (const id of Object.keys(r.picks || {})) if (id in perCategory) perCategory[id]++;
+      }
+      res.set("Cache-Control", "no-store");
+      res.json({
+        success: true,
+        phase: effectivePhase(event),
+        totalBallots: rows.length,
+        lastHour,
+        last24h,
+        changedBallots: changed,
+        hourly,
+        perCategory: event.categories.map((c) => ({ id: c.id, title: c.title, votes: perCategory[c.id] })),
+      });
+    } catch (e) {
+      console.error("[vc] admin stats:", shortErr(e));
+      res.status(500).json({ success: false, error: "Не вдалося порахувати" });
     }
   });
 
@@ -1052,6 +1167,29 @@ export function registerViewersChoiceRoutes(app, opts) {
   const collectorEnabled =
     process.env.VC_COLLECT_UK_STREAMS !== "0" && !!twitchClientId && !!twitchClientSecret;
   const collectorState = { running: false, lastRun: null, lastCount: 0 };
+  const collectorMinutes = Math.max(5, parseInt(process.env.VC_COLLECT_MINUTES || "60", 10) || 60);
+
+  /** Середні глядачі каналу з автозбору; якщо середніх ще немає — максимум; немає в базі — null. */
+  function avgOf(s) {
+    if (!s) return null;
+    if (s.viewer_samples > 0) return Math.round(s.viewers_sum / s.viewer_samples);
+    return s.max_viewers ?? null;
+  }
+  async function seenAverage(login) {
+    try {
+      const sb = getSupabase();
+      if (sb) {
+        const cols = schema.seenAvg ? "max_viewers, viewers_sum, viewer_samples" : "max_viewers";
+        const { data, error } = await sb.from("vc_seen_streamers").select(cols).eq("login", login).maybeSingle();
+        if (error) throw error;
+        return avgOf(data);
+      }
+      return avgOf((await store.listSeen()).find((r) => r.login === login));
+    } catch (e) {
+      console.error("[vc] seen average:", shortErr(e));
+      return null;
+    }
+  }
 
   async function collectUkStreams() {
     if (!collectorEnabled || collectorState.running) return 0;
@@ -1078,9 +1216,8 @@ export function registerViewersChoiceRoutes(app, opts) {
   }
 
   if (collectorEnabled) {
-    const minutes = Math.max(5, parseInt(process.env.VC_COLLECT_MINUTES || "20", 10) || 20);
     setTimeout(() => void collectUkStreams(), 15 * 1000).unref?.();
-    setInterval(() => void collectUkStreams(), minutes * 60 * 1000).unref?.();
+    setInterval(() => void collectUkStreams(), collectorMinutes * 60 * 1000).unref?.();
   }
 
   /* Прогрів кешу: аватарки номінантів завантажуються один раз при старті, а не під першим натовпом. */

@@ -56,3 +56,24 @@ body {
 .vc-tabs::-webkit-scrollbar {
   display: none;
 }
+
+/* Випадаючі списки: темні пункти й власна стрілка з відступом від краю */
+.vc-root select {
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark;
+  background-color: var(--vc-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239a9a96' stroke-width='1.8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+.vc-root select option {
+  background-color: #151515;
+  color: var(--vc-fg);
+}
+.vc-root select option:checked {
+  background-color: #2b1d47;
+  color: var(--vc-fg);
+}

@@ -5,7 +5,7 @@
   "votingDeadline": "2026-12-31T21:00:00+02:00",
   "writeIns": {
     "enabled": true,
-    "threshold": 3,
+    "threshold": 1,
     "maxPerUserPerCategory": 3,
     "languages": [
       "uk"

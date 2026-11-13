@@ -51,6 +51,7 @@ export default function ViewersChoiceAdmin() {
               РЕЗУЛЬТАТИ НАЖИВО ↗
             </Link>
           </div>
+          <LiveStats />
           <div className="mb-8 flex flex-wrap border border-[var(--vc-line)]" role="tablist">
             {[
               ["writeins", "Додані глядачами"],
@@ -74,6 +75,62 @@ export default function ViewersChoiceAdmin() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Наживо: скільки людей проголосувало, оновлюється кожні 30 секунд. */
+function LiveStats() {
+  const [s, setS] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    const tick = async () => {
+      try {
+        const j = await api("/api/vc/admin/stats");
+        if (alive) setS(j);
+      } catch {
+        /* немає доступу або база недоступна — блок просто не показуємо */
+      }
+    };
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, []);
+
+  if (!s) return null;
+  const max = Math.max(1, ...s.hourly);
+  return (
+    <section className="mb-8 border border-[var(--vc-line)]" aria-label="Статистика наживо">
+      <div className="grid grid-cols-2 lg:grid-cols-4">
+        {[
+          [s.totalBallots, "ПРОГОЛОСУВАЛО ВСЬОГО"],
+          [s.last24h, "ЗА ОСТАННЮ ДОБУ"],
+          [s.lastHour, "ЗА ОСТАННЮ ГОДИНУ"],
+          [s.changedBallots, "ЗМІНИЛИ СВІЙ ВИБІР"],
+        ].map(([v, l], i) => (
+          <div key={l} className={`flex flex-col gap-1.5 border-[var(--vc-line)] p-5 ${i % 2 === 0 ? "border-r" : ""} ${i < 2 ? "border-b lg:border-b-0" : ""} lg:border-r`}>
+            <span className="vc-display text-[36px] font-black leading-none">{Number(v).toLocaleString("uk-UA")}</span>
+            <span className="vc-mono text-[11px] text-[var(--vc-muted)]">{l}</span>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-[var(--vc-line)] p-5">
+        <span className="vc-mono text-[11px] text-[var(--vc-muted)]">НОВІ ГОЛОСИ ПО ГОДИНАХ (ОСТАННІ 24 ГОД) · ОНОВЛЮЄТЬСЯ КОЖНІ 30 С</span>
+        <div className="mt-3 flex h-20 items-end gap-1" role="img" aria-label={`Голоси по годинах: ${s.hourly.join(", ")}`}>
+          {s.hourly.map((n, i) => (
+            <span
+              key={i}
+              title={`${23 - i === 0 ? "остання година" : `${23 - i} год тому`}: ${n}`}
+              className="flex-1 bg-[var(--vc-accent)]"
+              style={{ height: `${Math.max(n ? 6 : 2, (n / max) * 100)}%`, opacity: n ? 1 : 0.25 }}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -114,9 +171,10 @@ function WriteIns({ onDenied }) {
   return (
     <div className="flex flex-col gap-10">
       <p className="m-0 text-sm text-[var(--vc-muted)]">
-        Номінант, якого додали глядачі, бачать усі, коли його додали {data.threshold}+ різних людей і мова каналу
-        {" "}
-        {data.languages.join(", ")}. Інакше він чекає тут. «Схвалити» показує одразу, «Приховати» прибирає з
+        {data.threshold > 1
+          ? `Номінанта, якого додали глядачі, бачать усі, коли його додали ${data.threshold}+ різних людей і мова каналу ${data.languages.join(", ")}.`
+          : `Номінанта, якого додав глядач, одразу бачать усі, якщо мова каналу ${data.languages.join(", ")}.`}{" "}
+        Неукраїномовні канали чекають тут на перевірку. «Схвалити» показує одразу, «Приховати» прибирає з
         категорії, і голоси за нього не рахуються.
       </p>
       {data.categories.map((c) => (
@@ -135,7 +193,8 @@ function WriteIns({ onDenied }) {
               {c.writeIns.map((n) => (
                 <Row key={n.login} n={n}>
                   <span className={`vc-mono text-xs ${n.visible ? "text-[var(--vc-accent)]" : "text-[#ffe28a]"}`}>
-                    {n.visible ? "● ВИДНО ВСІМ" : "○ ЧЕКАЄ"} · {n.count}/{data.threshold} · {n.language || "?"}
+                    {n.visible ? "● ВИДНО ВСІМ" : n.needsReview ? "○ МАЛИЙ КАНАЛ, ПЕРЕВІРТЕ" : "○ ЧЕКАЄ"} · {n.count}/
+                    {data.threshold} · {n.language || "?"}
                     {n.status === "approved" ? " · СХВАЛЕНО" : ""}
                   </span>
                   <span className="flex gap-2">
@@ -208,6 +267,9 @@ function Seen({ onDenied }) {
   const [game, setGame] = useState("");
   const [q, setQ] = useState("");
   const [onlyNew, setOnlyNew] = useState(true);
+  const [sort, setSort] = useState("viewers");
+  const [minViewers, setMinViewers] = useState(null);
+  const [minSightings, setMinSightings] = useState("");
   const [checked, setChecked] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -218,6 +280,7 @@ function Seen({ onDenied }) {
       setData(j);
       setError("");
       setCatId((c) => c || j.categories[0]?.id || "");
+      setMinViewers((v) => (v === null ? String(j.minAvgViewers ?? 0) : v));
     } catch (e) {
       if (e.status === 403) onDenied(e.message);
       else setError(e.message);
@@ -241,13 +304,25 @@ function Seen({ onDenied }) {
     if (!data) return [];
     const g = game.trim().toLowerCase();
     const qq = q.trim().toLowerCase();
-    return data.streamers.filter(
+    const minV = Math.max(0, parseInt(minViewers ?? "", 10) || 0);
+    const minS = Math.max(0, parseInt(minSightings, 10) || 0);
+    const list = data.streamers.filter(
       (s) =>
         (!onlyNew || !s.inCategories.includes(catId)) &&
         (!g || s.games.some((x) => x.toLowerCase().includes(g))) &&
-        (!qq || s.login.includes(qq) || s.displayName.toLowerCase().includes(qq))
+        (!qq || s.login.includes(qq) || s.displayName.toLowerCase().includes(qq)) &&
+        (s.avgViewers ?? s.maxViewers) >= minV &&
+        s.sightings >= minS
     );
-  }, [data, game, q, onlyNew, catId]);
+    const by = {
+      viewers: (a, b) => (b.avgViewers ?? 0) - (a.avgViewers ?? 0) || b.maxViewers - a.maxViewers,
+      peak: (a, b) => b.maxViewers - a.maxViewers || b.sightings - a.sightings,
+      sightings: (a, b) => b.sightings - a.sightings || b.maxViewers - a.maxViewers,
+      recent: (a, b) => String(b.lastSeen || "").localeCompare(String(a.lastSeen || "")),
+      name: (a, b) => a.login.localeCompare(b.login),
+    };
+    return list.sort(by[sort] || by.viewers);
+  }, [data, game, q, onlyNew, catId, minViewers, minSightings, sort]);
 
   const toggle = (l) =>
     setChecked((prev) => {
@@ -294,7 +369,9 @@ function Seen({ onDenied }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="m-0 max-w-[720px] text-sm text-[var(--vc-muted)]">
-          Сервер кожні ~20 хв записує всі українськомовні канали, що в ефірі. Усього зібрано:{" "}
+          Сервер щогодини записує українськомовні канали, що в ефірі, і рахує їхніх середніх глядачів. За
+          замовчуванням показано канали від {data.minAvgViewers} глядачів у середньому, поріг можна змінити праворуч. Усього
+          зібрано:{" "}
           <strong className="text-[var(--vc-fg)]">{data.streamers.length}</strong>.
           {data.collector.lastRun ? ` Останній збір: ${new Date(data.collector.lastRun).toLocaleString("uk-UA")}.` : ""}
           {!data.collector.enabled ? " Автозбір вимкнено." : ""} Позначте потрібних і додайте в категорію.
@@ -340,6 +417,43 @@ function Seen({ onDenied }) {
           {filtered.length > LIMIT ? `, ПОКАЗАНО ${LIMIT}` : ""}
         </span>
         {note && <span className="vc-mono text-xs text-[var(--vc-accent)]">● {note}</span>}
+
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <label className="vc-mono flex items-center gap-2 text-xs text-[var(--vc-muted)]">
+            СОРТУВАТИ
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className={`${input} bg-[var(--vc-bg)]`}>
+              <option value="viewers">за середніми глядачами</option>
+              <option value="peak">за піком глядачів</option>
+              <option value="sightings">за кількістю ефірів</option>
+              <option value="recent">за останнім ефіром</option>
+              <option value="name">за ніком</option>
+            </select>
+          </label>
+          <label className="vc-mono flex items-center gap-2 text-xs text-[var(--vc-muted)]">
+            СЕР. ГЛЯДАЧІВ ВІД
+            <input
+              type="number"
+              min="0"
+              inputMode="numeric"
+              value={minViewers ?? ""}
+              onChange={(e) => setMinViewers(e.target.value)}
+              placeholder="0"
+              className={`${input} w-[90px]`}
+            />
+          </label>
+          <label className="vc-mono flex items-center gap-2 text-xs text-[var(--vc-muted)]">
+            ЕФІРІВ ВІД
+            <input
+              type="number"
+              min="0"
+              inputMode="numeric"
+              value={minSightings}
+              onChange={(e) => setMinSightings(e.target.value)}
+              placeholder="0"
+              className={`${input} w-[80px]`}
+            />
+          </label>
+        </div>
       </div>
 
       <div className="border-t border-[var(--vc-line)]">
@@ -354,7 +468,7 @@ function Seen({ onDenied }) {
               {s.games.slice(0, 4).join(" · ")}
             </span>
             <span className="vc-mono text-right text-xs text-[var(--vc-muted)]">
-              {s.sightings}× · до {s.maxViewers} глядачів
+              СЕР. {(s.avgViewers ?? 0).toLocaleString("uk-UA")} · МАКС. {s.maxViewers.toLocaleString("uk-UA")} · {s.sightings} ЕФ.
             </span>
           </label>
         ))}

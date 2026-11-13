@@ -3,7 +3,7 @@ import { apiUrl } from "../../lib/apiOrigin";
 import { TwitchLoginButton } from "./shared";
 
 /** «Немає твого стрімера? Додай» — висування глядачами. */
-export default function AddStreamer({ category, user, onLogin, onAdded, threshold, initialQuery = "", empty = false }) {
+export default function AddStreamer({ category, user, onLogin, onAdded, threshold, minAvgViewers = 0, initialQuery = "", empty = false }) {
   const [value, setValue] = useState(initialQuery);
   const [state, setState] = useState({ busy: false, error: "", note: "" });
 
@@ -35,7 +35,10 @@ export default function AddStreamer({ category, user, onLogin, onAdded, threshol
             ? `${name} тепер у списку для всіх. Ваш голос за нього вже у вашому виборі.`
             : j.status === "needs_more"
               ? `${name} доданий і обраний у вашому виборі. Іншим глядачам він з'явиться, коли його додадуть ще ${Math.max(0, threshold - j.count)}.`
-              : `${name} доданий і обраний, але канал не україномовний, тож іншим він з'явиться після перевірки модератором.`;
+              : j.reason === "small"
+                ? `${name} доданий і обраний у вашому виборі. Канал поки невеликий, тож іншим він з'явиться після перевірки модератором.`
+                : `${name} доданий і обраний, але канал не україномовний, тож іншим він з'явиться після перевірки модератором.`;
+      window.gtag?.("event", "vc_add_streamer", { category: category.id, status: j.status });
       setValue("");
       setState({ busy: false, error: "", note });
       onAdded(j.nominee.login);
@@ -51,8 +54,12 @@ export default function AddStreamer({ category, user, onLogin, onAdded, threshol
           {empty ? "Тут поки порожньо: додай першим" : "Немає твого стрімера? Додай"}
         </h2>
         <p className="m-0 text-sm text-[var(--vc-muted)]">
-          Впиши нік або посилання на канал Twitch. Ти одразу зможеш за нього проголосувати, а для всіх він
-          з'явиться, коли його додадуть {threshold} різних глядачі.
+          Впиши нік або посилання на канал Twitch, і ти одразу зможеш за нього проголосувати.
+          {threshold > 1
+            ? ` Для всіх він з'явиться, коли його додадуть ${threshold} різних глядачі.`
+            : minAvgViewers > 0
+              ? ` Україномовний канал від ${minAvgViewers} глядачів у середньому одразу з'явиться для всіх, менші ми перевіримо й додамо.`
+              : " Україномовний канал одразу з'явиться в списку для всіх."}
         </p>
       </div>
       {user ? (

@@ -21,7 +21,7 @@ const PROJECTS = [
   {
     tag: "ПРОЄКТ",
     title: "Vyklav",
-    text: "Ще один наш проєкт.",
+    text: "Наш сервіс для стрімерів.",
     href: "https://vyklav.com/",
     cta: "VYKLAV.COM",
   },
@@ -97,13 +97,15 @@ export default function About() {
               href={s.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-[var(--vc-line)] py-5 text-[var(--vc-fg)] no-underline sm:grid-cols-[200px_minmax(0,1fr)_auto]"
+              className="group flex items-center justify-between gap-6 border-b border-[var(--vc-line)] py-5 text-[var(--vc-fg)] no-underline"
             >
-              <span className="vc-display text-[clamp(22px,2.6vw,32px)] font-black uppercase tracking-[-0.02em] group-hover:text-[var(--vc-accent)]">
-                {s.label}
+              <span className="flex min-w-0 flex-wrap items-baseline gap-x-6 gap-y-1">
+                <span className="vc-display text-[clamp(22px,2.6vw,32px)] font-black uppercase tracking-[-0.02em] group-hover:text-[var(--vc-accent)]">
+                  {s.label}
+                </span>
+                <span className="vc-mono truncate text-[13px] text-[var(--vc-muted)]">{s.handle}</span>
               </span>
-              <span className="vc-mono hidden truncate text-[13px] text-[var(--vc-muted)] sm:block">{s.handle}</span>
-              <span className="vc-mono text-[13px]">ПЕРЕЙТИ ↗</span>
+              <span className="vc-mono shrink-0 text-[13px]">ПЕРЕЙТИ ↗</span>
             </a>
           ))}
         </div>

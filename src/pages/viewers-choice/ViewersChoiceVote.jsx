@@ -204,6 +204,7 @@ function Ballot({ data, onReload }) {
       login();
       return;
     }
+    const hadBallot = Object.keys(saved).length > 0;
     setSubmit({ busy: true, error: "", ok: false });
     try {
       const r = await fetch(apiUrl("/api/vc/ballot"), {
@@ -221,6 +222,8 @@ function Ballot({ data, onReload }) {
       setSaved(j.ballot.picks);
       setPicks(j.ballot.picks);
       setSubmit({ busy: false, error: "", ok: true });
+      /* Подія для Google Analytics: видно, скільки людей проголосувало */
+      window.gtag?.("event", "vc_vote", { categories: Object.keys(j.ballot.picks).length, updated: hadBallot });
     } catch (e) {
       setSubmit({ busy: false, error: e.message, ok: false });
     }
@@ -279,24 +282,32 @@ function Ballot({ data, onReload }) {
       <main className="mx-auto max-w-[1320px] px-4 pt-12 sm:px-6">
         {current && (
           <>
-            <div className="flex flex-wrap items-end justify-between gap-6 pb-8">
+            <div className="flex flex-col gap-6 pb-8">
               <div className="flex min-w-0 flex-col gap-3.5">
                 <span className="vc-mono text-[13px] text-[var(--vc-accent)]">
-                  [ {pad2(step + 1)} / {pad2(total)} ] НОМІНАЦІЯ · {current.nominees.length} НОМІНАНТІВ
+                  [ {pad2(step + 1)} / {pad2(total)} ] НОМІНАЦІЯ
                 </span>
-                <h1 className="vc-display m-0 text-[clamp(30px,4.8vw,68px)] font-black uppercase leading-[1.12] tracking-[-0.035em]">
+                <h1 className="vc-display m-0 text-[clamp(26px,3.6vw,52px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
                   {current.title}
                 </h1>
               </div>
-              <div className="flex w-full max-w-[360px] flex-col gap-4">
-                <label className="flex min-h-[48px] items-center gap-3 border border-[var(--vc-line)] px-4 focus-within:border-[var(--vc-muted)]">
-                  <span className="vc-mono text-xs text-[var(--vc-muted)]">ПОШУК</span>
+              <div className="flex flex-wrap items-center justify-between gap-4 border-y border-[var(--vc-line)] py-4">
+                <span className="vc-mono text-[13px] text-[var(--vc-muted)]">
+                  {current.nominees.length} НОМІНАНТІВ
+                  {query ? ` · ЗНАЙДЕНО ${nominees.length}` : ""}
+                </span>
+                <label className="flex min-h-[56px] w-full items-center gap-3 border border-[var(--vc-line)] px-5 focus-within:border-[var(--vc-muted)] sm:w-[480px]">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0 text-[var(--vc-muted)]">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M20 20l-3.5-3.5" />
+                  </svg>
+                  <span className="sr-only">Пошук стрімера</span>
                   <input
                     type="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="нік стримера"
-                    className="vc-mono min-w-0 flex-1 bg-transparent text-sm text-[var(--vc-fg)] outline-none placeholder:text-[var(--vc-dim)] focus-visible:outline-none"
+                    placeholder="Знайти стрімера за ніком"
+                    className="vc-mono min-w-0 flex-1 bg-transparent text-[15px] text-[var(--vc-fg)] outline-none placeholder:text-[var(--vc-dim)] focus-visible:outline-none"
                   />
                 </label>
               </div>
@@ -367,6 +378,7 @@ function Ballot({ data, onReload }) {
                 user={user}
                 onLogin={login}
                 threshold={event.writeIns.threshold}
+                minAvgViewers={event.writeIns.minAvgViewers || 0}
                 initialQuery={nominees.length === 0 ? query : ""}
                 empty={current.nominees.length === 0}
                 onAdded={(loginName) => onAdded(current.id, loginName)}

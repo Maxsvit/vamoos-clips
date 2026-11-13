@@ -56,3 +56,9 @@ create table if not exists public.vc_seen_streamers (
   last_seen timestamptz not null default now()
 );
 alter table public.vc_seen_streamers enable row level security;
+
+-- 5) Середні глядачі для автозбору та позначка «малий канал — на перевірку».
+--    Безпечно виконувати повторно.
+alter table public.vc_seen_streamers add column if not exists viewers_sum bigint not null default 0;
+alter table public.vc_seen_streamers add column if not exists viewer_samples integer not null default 0;
+alter table public.vc_nominations add column if not exists needs_review boolean not null default false;
