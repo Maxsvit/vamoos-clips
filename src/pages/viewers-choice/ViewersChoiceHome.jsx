@@ -46,7 +46,7 @@ export default function ViewersChoiceHome() {
           <section className="border-b border-[var(--vc-line)]">
             <div className="mx-auto flex max-w-[1320px] flex-col gap-10 px-4 pb-14 pt-16 sm:px-6 sm:pt-20">
               <div className="vc-mono flex flex-wrap justify-between gap-4 text-[13px] text-[var(--vc-muted)]">
-                <span>[ ВИПУСК 02 ] ЩОРІЧНА ЦЕРЕМОНІЯ КАНАЛУ</span>
+                <span>ЩОРІЧНА ЦЕРЕМОНІЯ КАНАЛУ</span>
                 <span>ГОЛОСУЮТЬ ГЛЯДАЧІ, А НЕ ЖУРІ</span>
               </div>
               <h1 className="vc-display m-0 text-[clamp(40px,8.6vw,124px)] font-black uppercase leading-[1.12] tracking-[-0.05em]">
@@ -139,7 +139,7 @@ export default function ViewersChoiceHome() {
                 Номінації
               </h2>
               <span className="vc-mono text-[13px] text-[var(--vc-muted)]">
-                [ {pad2(data.categories.length)} КАТЕГОРІЙ ]
+                {pad2(data.categories.length)} КАТЕГОРІЙ
               </span>
             </div>
             <div className="border-t border-[var(--vc-line)]">

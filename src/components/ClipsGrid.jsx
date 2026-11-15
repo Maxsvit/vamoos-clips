@@ -140,7 +140,7 @@ export default function ClipsGrid({ items = [], page = 1, totalPages = 1, totalI
         </h2>
         {totalItems > 0 && (
           <span className="vc-mono text-[13px] text-[var(--vc-muted)]">
-            [ {totalItems.toLocaleString("uk-UA")} У ДОБІРЦІ{showPager ? ` · СТОРІНКА ${pad2(page)} / ${pad2(totalPages)}` : ""} ]
+            {totalItems.toLocaleString("uk-UA")} У ДОБІРЦІ{showPager ? ` · СТОРІНКА ${pad2(page)} / ${pad2(totalPages)}` : ""}
           </span>
         )}
       </div>

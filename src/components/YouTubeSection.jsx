@@ -3,7 +3,6 @@ function YouTubeSection() {
     <section className="border-t border-[var(--vc-line)]">
       <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-8 px-4 py-16 sm:px-6 sm:py-20">
         <div className="flex max-w-[720px] flex-col gap-5">
-          <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ YOUTUBE ] НОВІ ВИПУСКИ</span>
           <h2 className="vc-display m-0 text-[clamp(28px,3.6vw,52px)] font-black uppercase leading-[1.12] tracking-[-0.035em]">
             Добірки, які не <span className="text-[var(--vc-accent)]">потрапили</span> на стрім
           </h2>

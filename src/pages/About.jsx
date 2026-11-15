@@ -7,14 +7,12 @@ import { useAuth } from "../context/AuthContext";
 
 const PROJECTS = [
   {
-    tag: "САЙТ",
     title: "Кліпи українського Twitch",
     text: "Архів найкращих моментів, які надсилаєте ви. З них збираємо добірки для YouTube.",
     to: "/",
     cta: "ДИВИТИСЬ КЛІПИ",
   },
   {
-    tag: "ЩОРІЧНО",
     title: "Народний Viewers Choice",
     text: "Голосування глядачів за найкращих стрімерів року в різних номінаціях.",
     to: "/viewers-choice",
@@ -22,7 +20,6 @@ const PROJECTS = [
     viewersChoice: true,
   },
   {
-    tag: "ПРОЄКТ",
     title: "Vyklav",
     text: "Наш сервіс для стрімерів.",
     href: "https://vyklav.com/",
@@ -51,7 +48,6 @@ export default function About() {
     <div className="vc-root">
       <section className="border-b border-[var(--vc-line)]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-4 pb-12 pt-14 sm:px-6 sm:pt-20">
-          <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ПРО НАС ] VAMOOS NARIZKY</span>
           <h1 className="vc-display m-0 text-[clamp(36px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
             Про <span className="text-[var(--vc-accent)]">нас</span>
           </h1>
@@ -76,7 +72,6 @@ export default function About() {
               "group flex min-h-[240px] flex-col gap-4 border-b border-r border-[var(--vc-line)] p-6 text-[var(--vc-fg)] no-underline hover:bg-[#151515]";
             const inner = (
               <>
-                <span className="vc-mono text-xs text-[var(--vc-accent)]">[ {p.tag} ]</span>
                 <span className="vc-display text-2xl font-black uppercase leading-tight tracking-[-0.02em]">{p.title}</span>
                 <span className="text-[15px] leading-relaxed text-[var(--vc-muted)]">{p.text}</span>
                 <span className="vc-mono mt-auto text-[13px] group-hover:text-[var(--vc-accent)]">
@@ -125,7 +120,6 @@ export default function About() {
       <section className="border-t border-[var(--vc-line)]">
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-end justify-between gap-8 px-4 py-16 sm:px-6 sm:py-20">
           <div className="flex min-w-0 max-w-[640px] flex-col gap-5">
-            <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ КОНТАКТИ ] ПИШИ НАМ</span>
             <h2 className="vc-display m-0 text-[clamp(28px,3.6vw,52px)] font-black uppercase leading-[1.12] tracking-[-0.035em]">
               Хочеш співпрацювати?
             </h2>

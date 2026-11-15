@@ -71,7 +71,6 @@ export default function SubmitClip() {
     <div className="vc-root">
       <section className="border-b border-[var(--vc-line)]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-6 px-4 pb-12 pt-14 sm:px-6 sm:pt-20">
-          <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ФОРМА ] НАДІШЛИ СВІЙ МОМЕНТ</span>
           <h1 className="vc-display m-0 text-[clamp(36px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
             Додати <span className="text-[var(--vc-accent)]">кліп</span>
           </h1>

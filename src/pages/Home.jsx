@@ -205,7 +205,6 @@ function Home() {
 
       <section className="border-b border-[var(--vc-line)]">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-10 px-4 pb-14 pt-14 sm:px-6 sm:pt-20">
-          <span className="vc-mono text-[13px] text-[var(--vc-muted)]">[ АРХІВ ] КЛІПИ УКРАЇНСЬКОГО TWITCH</span>
           <h1 className="vc-display m-0 text-[clamp(28px,6.4vw,92px)] font-black uppercase leading-[1.12] tracking-[-0.045em]">
             Найкращі <span className="text-[var(--vc-accent)]">кліпи</span>
             <br />

@@ -290,7 +290,7 @@ function Ballot({ data, onReload, preview = false }) {
             <div className="flex flex-col gap-6 pb-8">
               <div className="flex min-w-0 flex-col gap-3.5">
                 <span className="vc-mono text-[13px] text-[var(--vc-accent)]">
-                  [ {pad2(step + 1)} / {pad2(total)} ] НОМІНАЦІЯ
+                  НОМІНАЦІЯ {pad2(step + 1)} / {pad2(total)}
                 </span>
                 <h1 className="vc-display m-0 text-[clamp(26px,3.6vw,52px)] font-black uppercase leading-[1.12] tracking-[-0.03em]">
                   {current.title}
@@ -395,7 +395,6 @@ function Ballot({ data, onReload, preview = false }) {
         {isSummary && (
           <>
             <div className="flex flex-col gap-3.5 pb-8">
-              <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ФІНАЛ ] ПЕРЕВІРКА</span>
               <h1 className="vc-display m-0 text-[clamp(30px,4.8vw,68px)] font-black uppercase leading-[1.12] tracking-[-0.035em]">
                 Ваш вибір
               </h1>

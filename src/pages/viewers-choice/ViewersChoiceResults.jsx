@@ -85,7 +85,6 @@ export default function ViewersChoiceResults() {
 
           <section className="border-b border-[var(--vc-line)]">
             <div className="mx-auto flex max-w-[1320px] flex-col gap-5 px-4 pb-12 pt-16 sm:px-6">
-              <span className="vc-mono text-[13px] text-[var(--vc-accent)]">[ ФІНАЛ ] РЕЗУЛЬТАТИ ГОЛОСУВАННЯ</span>
               <h1 className="vc-display m-0 text-[clamp(40px,7.6vw,108px)] font-black uppercase leading-[1.12] tracking-[-0.05em]">
                 Перемо&shy;жці <span className="text-[var(--vc-accent)]">26</span>
               </h1>
